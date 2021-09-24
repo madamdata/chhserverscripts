@@ -5,8 +5,10 @@ mailboxes = {}
 for mb in mailboxlist:
     mailboxes[mb] = mailbox.Maildir('/home/pi/mailtest/'+mb, factory=None, create=False)
 
-for key in mailboxes['a'].keys():
-    msg = mailboxes['a'].get(key)
-    sender = msg['From']
-    print(sender)
-    print(msg.keys())
+a = mailboxes['a']
+msg = a.get(a.keys()[3])
+for x in msg.walk:
+    if x.get_content_disposition() == 'attachment':
+        print("ATTACHMENT FOUND!!")
+
+
