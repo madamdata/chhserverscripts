@@ -7,7 +7,7 @@ for mb in mailboxlist:
 
 a = mailboxes['a']
 msg = a.get(a.keys()[3])
-for x in msg.walk:
+for x in msg.walk():
     if x.get_content_disposition() == 'attachment':
         print("ATTACHMENT FOUND!!")
 
