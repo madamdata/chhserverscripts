@@ -9,7 +9,7 @@ for mb in mailboxlist:
 
 a = mailboxes['a']
 numMessages = len(a.keys())
-print(mailboxes)
+# print(mailboxes)
 
 for boxname, box in mailboxes.items():
     for key, msg in box.iteritems():
