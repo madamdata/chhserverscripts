@@ -3,14 +3,15 @@ import os
 import datetime
 from email.header import decode_header
 
-mailboxlist = ['a', 'b', 'c']
-logfilePath = '/home/pi/mailtest/attachscript.log'
-synclogPath = '/home/pi/mailtest/sync.log'
+os.chdir('/home/pi/mail/pochhmail')
+mailboxlist = ['wolter', 'rosenberg', 'wsk', 'metavent']
+logfilePath = '../log/attachscript.log'
+synclogPath = '../log/sync.log'
 mailboxes = {}
 for mb in mailboxlist:
-    mailboxes[mb] = mailbox.Maildir('/home/pi/mailtest/'+mb, factory=None, create=False)
+    mailboxes[mb] = mailbox.Maildir(mb, factory=None, create=False)
 
-cmdMailbox = mailbox.Maildir('/home/pi/mailtest/commands', factory=None, create=False) #create a mailbox object for the special logs mailbox
+cmdMailbox = mailbox.Maildir('commands', factory=None, create=False) #create a mailbox object for the special logs mailbox
 
 
 def next_path(path_pattern, ext):
@@ -74,7 +75,7 @@ for boxname, box in mailboxes.items():
                     filename = boxname + "-" + filename + "-" + datestring + ext
                     filename = filename.replace(" ", "")
                     print(datestring + ": attachment found: " + x.get_content_type() + ": " + filename)
-                    filepath = '/home/pi/mailtest/attachTest/' + boxname + "/" + filename
+                    filepath = '../attachments/' + boxname + "/" + filename
                     if os.path.exists(filepath):                #check for duplicates and increment file name if needed.
                         print(filename + " : File with that name exists already! Incrementing file name.")
                         path, ext = os.path.splitext(filepath)
