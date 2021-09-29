@@ -4,33 +4,26 @@ import datetime
 from email.header import decode_header
 
 mailboxlist = ['a', 'b', 'c']
-# mailboxlist = ['a']
+logfilePath = '/home/pi/mailtest/attachscript.log'
+synclogPath = '/home/pi/mailtest/sync.log'
 mailboxes = {}
 for mb in mailboxlist:
     mailboxes[mb] = mailbox.Maildir('/home/pi/mailtest/'+mb, factory=None, create=False)
 
-a = mailboxes['a']
-numMessages = len(a.keys())
-# print(mailboxes)
+cmdMailbox = mailbox.Maildir('/home/pi/mailtest/commands', factory=None, create=False) #create a mailbox object for the special logs mailbox
+
 
 def next_path(path_pattern, ext):
     """
-    Finds the next free path in an sequentially named list of files
-
-    e.g. path_pattern = 'file-%s.txt':
-
-    file-1.txt
-    file-2.txt
-    file-3.txt
-
-    Runs in log(n) time where n is the number of existing files in sequence
+    adapted from stackexchange ... 
+    adds (1) (2) etc to filenames if a file exists at the specified path
+    Runs in log(n) time where n is the number of existing files in sequence (more efficient than a brute force search)
     """
     i = 1
 
     # First do an exponential search
     while os.path.exists(path_pattern % i + ext):
         i = i * 2
-
     # Result lies somewhere in the interval (i/2..i]
     # We call this interval (a..b] and narrow it down until a + 1 = b
     a, b = (i // 2, i)
@@ -40,19 +33,36 @@ def next_path(path_pattern, ext):
 
     return path_pattern % b + ext
 
+#first check for commands in the command mailbox
+
+for key, msg in cmdMailbox.iteritems():
+    if msg.get_subdir() == 'new':
+        datestring = datetime.datetime.now().strftime("%d%b%Y-%H:%M")
+        subject = msg['Subject']
+        if subject == "SENDLOGS": 
+            print("SENDLOGS command received at " + datestring)
+            cmdMailbox.discard(key) #delete the command message
+            logString = open(logfilePath, 'r').read() #open log file and read it to a string
+            logMsg = mailbox.MaildirMessage()
+            logMsg['From'] = "CHH Mail Processing Server <noreply@chhserver.md>"
+            logMsg['Subject'] = "Logs " + datestring
+            logMsg.set_payload(logString, "utf-8")
+            cmdMailbox.add(logMsg)
+        cmdMailbox.flush()
+            
+
 
 for boxname, box in mailboxes.items():
     for key, msg in box.iteritems():
         if msg.get_subdir() == 'new':
-            msg.set_subdir('cur')
+            msg.set_subdir('cur') #mark message as read
             msg.add_flag('S')
             sender = msg['From']
             datestring = datetime.datetime.now().strftime("%d%b%Y")
             for x in msg.walk():                                #msg.walk() goes through all the subparts depth-first
-                if x.get_content_disposition() == 'attachment': #is this subpart an attachment? 
+                if x.get_content_disposition() == 'attachment': # proceed if this subpart is an attachment 
                     rawfilename = x.get_filename()
-                    # print(rawfilename)
-                    filename, charset = decode_header(rawfilename)[0]
+                    filename, charset = decode_header(rawfilename)[0] #figure out what the header is based on RFC 2047 codes
                     if charset == 'utf-8':
                         filename = filename.decode('utf-8')
                     elif charset == None:
@@ -66,16 +76,15 @@ for boxname, box in mailboxes.items():
                     print(datestring + ": attachment found: " + x.get_content_type() + ": " + filename)
                     filepath = '/home/pi/mailtest/attachTest/' + boxname + "/" + filename
                     if os.path.exists(filepath):                #check for duplicates and increment file name if needed.
-                        print(filepath + " : File with that name exists already! Incrementing file name.")
+                        print(filename + " : File with that name exists already! Incrementing file name.")
                         path, ext = os.path.splitext(filepath)
                         path = path + "(%s)"
                         filepath = next_path(path, ext)
-                        # print(filepath)
 
-                    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+                    os.makedirs(os.path.dirname(filepath), exist_ok=True) #make directory if it doesn't already exist
                     with open(filepath, 'wb') as fp:
                         fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
-            box.update({key:msg}) #add the --modified-- message, with new flags and subdir, to the mailbox. Remember that 'msg' has no necessary relation to the actual file in the mailbox - it's just a representation that we manipulate. 
+            box.update({key:msg}) #add the modified message, with new flags and subdir, to the mailbox. Remember that 'msg' has no necessary relation to the actual file in the mailbox - it's just a representation that we manipulate. 
 
 
             
