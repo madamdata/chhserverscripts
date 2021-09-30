@@ -5,8 +5,8 @@ from email.header import decode_header
 
 os.chdir('/home/pi/mail/pochhmail') #main mainbox directory. Everything in this script is relative to this path
 mailboxlist = ['wolter', 'rosenberg', 'wsk', 'metavent'] #mailboxes to track
-logfilePath = '../log/attachscript.log'
-synclogPath = '../log/sync.log'
+logfilePath = '../attachments/log/attachscript.log'
+synclogPath = '../attachments/log/sync.log'
 mailboxes = {}
 for mb in mailboxlist:
     mailboxes[mb] = mailbox.Maildir(mb, factory=None, create=False)
