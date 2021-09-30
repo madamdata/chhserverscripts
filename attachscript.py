@@ -13,7 +13,7 @@ for mb in mailboxlist:
 
 cmdMailbox = mailbox.Maildir('commands', factory=None, create=False) #create a mailbox object for the special logs mailbox
 
-
+# ---- function definitions ----
 def next_path(path_pattern, ext):
     """
     adapted from stackexchange ... 
@@ -34,6 +34,9 @@ def next_path(path_pattern, ext):
 
     return path_pattern % b + ext
 
+
+# --- MAIN BODY ----
+
 # ---- first, check for commands in the command mailbox ----
 for key, msg in cmdMailbox.iteritems():
     if msg.get_subdir() == 'new':
@@ -52,19 +55,20 @@ for key, msg in cmdMailbox.iteritems():
         cmdMailbox.flush()
             
 
-
-for boxname, box in mailboxes.items():
-    for key, msg in box.iteritems():            #step through all the mail in the mailbox
+# ---- next, check all the actual mailboxes for new attachments ----
+for boxname, box in mailboxes.items():          # for each mailbox...
+    for key, msg in box.iteritems():            # step through all the mail in the mailbox
         if msg.get_subdir() == 'new':
             msg.set_subdir('cur') # if it's in 'new', mark message as read
-            msg.add_flag('S') #set 'read' flag (not sure how this is different from putting it in cur instead of new)
+            msg.add_flag('S') # set 'read' flag (not sure how this is different from putting it in cur instead of new)
             sender = msg['From']
             datestring = datetime.datetime.now().strftime("%d%b%Y")
 
-            for x in msg.walk():                                #msg.walk() goes through all the subparts depth-first
+            # ---- subpart handling ----
+            for x in msg.walk():                                # msg.walk() goes through all the subparts depth-first
                 if x.get_content_disposition() == 'attachment': # proceed only if this subpart is an attachment 
 
-                    # ---- figure out what the header is based on RFC 2047 codes --- 
+                    # ---- figure out what the header is based on RFC 2047 codes - to ensure unicode stuff eg Chinese chars appear correctly --- 
                     rawfilename = x.get_filename()
                     filename, charset = decode_header(rawfilename)[0] 
                     if charset == 'utf-8':
