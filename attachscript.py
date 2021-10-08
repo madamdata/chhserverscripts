@@ -3,13 +3,13 @@ import os
 import datetime
 from email.header import decode_header
 
+# ---- path and variable definitions ----
 os.chdir('/home/pi/mail/pochhmail') #main mainbox directory. Everything in this script is relative to this path
-mailboxlist = ['wolter', 'rosenberg', 'wsk', 'metavent'] #mailboxes to track
 logfilePath = '../attachments/log/attachscript.log'
 synclogPath = '../attachments/log/sync.log'
-mailboxes = {}
-for mb in mailboxlist:
-    mailboxes[mb] = mailbox.Maildir(mb, factory=None, create=False)
+attachmentFolderPath = '../attachments/'
+
+inbox = mailbox.Maildir("INBOX", factory=None, create=False)
 
 cmdMailbox = mailbox.Maildir('commands', factory=None, create=False) #create a mailbox object for the special logs mailbox
 
@@ -55,53 +55,59 @@ for key, msg in cmdMailbox.iteritems():
         cmdMailbox.flush()
             
 
-# ---- next, check all the actual mailboxes for new attachments ----
-for boxname, box in mailboxes.items():          # for each mailbox...
-    for key, msg in box.iteritems():            # step through all the mail in the mailbox
-        if msg.get_subdir() == 'new':
-            msg.set_subdir('cur') # if it's in 'new', mark message as read
-            msg.add_flag('S') # set 'read' flag (not sure how this is different from putting it in cur instead of new)
-            sender = msg['From']
-            datestring = datetime.datetime.now().strftime("%d%b%Y")
+# ---- next, check the inbox for new attachments ----
+for key, msg in inbox.iteritems():            # step through all the mail in the inbox
+    print(key)
+    if msg.get_subdir() == 'new':
+        msg.set_subdir('cur') # if it's in 'new', mark message as read
+        msg.add_flag('S') # set 'read' flag (not sure how this is different from putting it in cur instead of new)
+        sender = msg['From']
+        to = msg['To'].split('@')[0] #grab all the stuff before the '@', then split by '+'  
+        toComponents = to.split('+')
+        toComponents.pop(0) #remove 0th element: the 'po' head
+        pathString = '/'.join(toComponents) + '/' #turn it into a path by putting / between items
+        # print(pathString)
+        datestring = datetime.datetime.now().strftime("%d%b%Y")
 
-            # ---- subpart handling ----
-            for x in msg.walk():                                # msg.walk() goes through all the subparts depth-first
-                if x.get_content_disposition() == 'attachment': # proceed only if this subpart is an attachment 
+        # ---- subpart handling ----
+        for x in msg.walk():                                # msg.walk() goes through all the subparts depth-first
+            if x.get_content_disposition() == 'attachment': # proceed only if this subpart is an attachment 
 
-                    # ---- figure out what the header is based on RFC 2047 codes - to ensure unicode stuff eg Chinese chars appear correctly --- 
-                    rawfilename = x.get_filename()
-                    filename, charset = decode_header(rawfilename)[0] 
-                    if charset == 'utf-8':
-                        filename = filename.decode('utf-8')
-                    elif charset == None:
-                        filename = filename
-                    else: 
-                        print("Can't tell what encoding the filename is.")
-                        filename = rawfilename
-                        
-                    # ---- create a filename by adding the name of the box and the date ----
-                    filename, ext = os.path.splitext(filename)
-                    filename = boxname + "-" + filename + "-" + datestring + ext
-                    filename = filename.replace(" ", "")
-                    print(datestring + ": attachment found: " + x.get_content_type() + ": " + filename)
-                    filepath = '../attachments/' + boxname + "/" + filename
+                # ---- figure out what the header is based on RFC 2047 codes - to ensure unicode stuff eg Chinese chars appear correctly --- 
+                rawfilename = x.get_filename()
+                filename, charset = decode_header(rawfilename)[0] 
+                if charset == 'utf-8':
+                    filename = filename.decode('utf-8')
+                elif charset == None:
+                    filename = filename
+                else: 
+                    print("Can't tell what encoding the filename is.")
+                    filename = rawfilename
+                    
+                # ---- create a filename by adding the name of the box and the date ----
+                filename, ext = os.path.splitext(filename)
+                filename = to + "__" + filename + "__" + datestring + ext
+                filename = filename.replace(" ", "") #strip whitespace
+                print(datestring + ": attachment found: " + x.get_content_type() + ": " + filename)
+                filepath = attachmentFolderPath + pathString + filename
 
-                    # ---- check for duplicates and increment file name if needed, using next_path function defined above ----
-                    if os.path.exists(filepath):                
-                        print(filename + " : File with that name exists already! Incrementing file name.")
-                        path, ext = os.path.splitext(filepath)
-                        path = path + "(%s)"
-                        filepath = next_path(path, ext)
+                # ---- check for duplicates and incremenk file name if needed, using next_path function defined above ----
+                if os.path.exists(filepath):                
+                    print(filename + " : File with that name exists already! Incrementing file name.")
+                    path, ext = os.path.splitext(filepath)
+                    path = path + "(%s)"
+                    filepath = next_path(path, ext)
 
-                    # --- write the attachment data into a file with the correct name and extension ----
-                    os.makedirs(os.path.dirname(filepath), exist_ok=True) #make directory if it doesn't already exist
-                    with open(filepath, 'wb') as fp:
-                        fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
+                # --- write the attachment data into a file with the correct name and extension ----
+                os.makedirs(os.path.dirname(filepath), exist_ok=True) #make directory if it doesn't already exist
+                # print(filepath)
+                with open(filepath, 'wb') as fp:
+                    fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
 
-            #add the modified message, with new flags and subdir, to the mailbox. 
-            #Remember that 'msg' has no necessary relation to the actual file in the mailbox - 
-            #it's just a representation that we manipulate. 
-            box.update({key:msg}) 
+        #add the modified message, with new flags and subdir, to the mailbox. 
+        #Remember that 'msg' has no necessary relation to the actual file in the mailbox - 
+        #it's just a representation that we manipulate. 
+        inbox.update({key:msg}) 
 
 
             
