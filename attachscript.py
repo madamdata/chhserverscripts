@@ -57,7 +57,7 @@ for key, msg in cmdMailbox.iteritems():
 
 # ---- next, check the inbox for new attachments ----
 for key, msg in inbox.iteritems():            # step through all the mail in the inbox
-    print(key)
+    #print(key)
     if msg.get_subdir() == 'new':
         msg.set_subdir('cur') # if it's in 'new', mark message as read
         msg.add_flag('S') # set 'read' flag (not sure how this is different from putting it in cur instead of new)
