@@ -62,7 +62,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
         msg.set_subdir('cur') # if it's in 'new', mark message as read
         msg.add_flag('S') # set 'read' flag (not sure how this is different from putting it in cur instead of new)
         sender = msg['From']
-        to = msg['To'].split('@')[0] #grab all the stuff before the '@', then split by '+'  
+        to = msg['To'].split('@')[0].replace("<", "") #grab all the stuff before the '@', then split by '+' and strip any < 
         toComponents = to.split('+')
         toComponents.pop(0) #remove 0th element: the 'po' head
         pathString = '/'.join(toComponents) + '/' #turn it into a path by putting / between items
