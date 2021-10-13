@@ -66,6 +66,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
         toComponents = to.split('+')
         toComponents.pop(0) #remove 0th element: the 'po' head
         pathString = '/'.join(toComponents) + '/' #turn it into a path by putting / between items
+        pathStringForFilename = '_'.join(toComponents) #with _ instead of / for filename
         # print(pathString)
         datestring = datetime.datetime.now().strftime("%d%b%Y")
 
@@ -86,7 +87,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                     
                 # ---- create a filename by adding the name of the box and the date ----
                 filename, ext = os.path.splitext(filename)
-                filename = to + "__" + filename + "__" + datestring + ext
+                filename = pathStringForFilename + "__" + filename + "__" + datestring + ext
                 filename = filename.replace(" ", "") #strip whitespace
                 print(datestring + ": attachment found: " + x.get_content_type() + ": " + filename)
                 filepath = attachmentFolderPath + pathString + filename
