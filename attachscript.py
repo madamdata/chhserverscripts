@@ -1,6 +1,8 @@
 import mailbox
 import os
+# import shutil
 import datetime
+import dateparser
 from email.header import decode_header
 
 # ---- path and variable definitions ----
@@ -8,8 +10,11 @@ os.chdir('/home/pi/mail/pochhmail') #main mainbox directory. Everything in this 
 logfilePath = '../attachments/log/attachscript.log'
 synclogPath = '../attachments/log/sync.log'
 attachmentFolderPath = '../attachments/'
+downloadFolderPath = 'downloaded/'
+inboxFolderPath = 'INBOX/'
 
-inbox = mailbox.Maildir("INBOX", factory=None, create=False)
+inbox = mailbox.Maildir(inboxFolderPath, factory=None, create=False)
+downloaded = mailbox.Maildir("downloaded", factory=None, create=False) #place to put the downloaded messages
 
 cmdMailbox = mailbox.Maildir('commands', factory=None, create=False) #create a mailbox object for the special logs mailbox
 
@@ -59,16 +64,15 @@ for key, msg in cmdMailbox.iteritems():
 for key, msg in inbox.iteritems():            # step through all the mail in the inbox
     #print(key)
     if msg.get_subdir() == 'new':
-        msg.set_subdir('cur') # if it's in 'new', mark message as read
-        msg.add_flag('S') # set 'read' flag (not sure how this is different from putting it in cur instead of new)
         sender = msg['From']
-        to = msg['To'].split('@')[0].replace("<", "") #grab all the stuff before the '@', then split by '+' and strip any < 
+        to = msg['To'].split('@')[0].replace("<", "").lower() #grab all the stuff before the '@', then split by '+' and strip any < 
         toComponents = to.split('+')
         toComponents.pop(0) #remove 0th element: the 'po' head
         pathString = '/'.join(toComponents) + '/' #turn it into a path by putting / between items
         pathStringForFilename = '_'.join(toComponents) #with _ instead of / for filename
         # print(pathString)
-        datestring = datetime.datetime.now().strftime("%d%b%Y")
+        currentDatestring = datetime.datetime.now().strftime("%m%d%Y_%H%M")
+        sentDatestring = dateparser.parse(msg['Date']).strftime("%m%d_%Y")
 
         # ---- subpart handling ----
         for x in msg.walk():                                # msg.walk() goes through all the subparts depth-first
@@ -87,9 +91,9 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                     
                 # ---- create a filename by adding the name of the box and the date ----
                 filename, ext = os.path.splitext(filename)
-                filename = pathStringForFilename + "__" + filename + "__" + datestring + ext
+                filename = pathStringForFilename + "__" + filename + "__" + sentDatestring + ext
                 filename = filename.replace(" ", "") #strip whitespace
-                print(datestring + ": attachment found: " + x.get_content_type() + ": " + filename)
+                print("attachment found: " + x.get_content_type() + ": " + filename + " at " + currentDatestring)
                 filepath = attachmentFolderPath + pathString + filename
 
                 # ---- check for duplicates and incremenk file name if needed, using next_path function defined above ----
@@ -105,10 +109,19 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 with open(filepath, 'wb') as fp:
                     fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
 
+                # --- move the message out of the inbox ---
+                # downloaded.add(msg)
+                # shutil.copyfile(inboxFolderPath+"new/"+key, downloadFolderPath+"cur/"+key)
+                msg.set_subdir('cur') # if it's in 'new', mark message as read
+                msg.add_flag('S') # set 'read' flag (not sure how this is different from putting it in cur instead of new)
+                downloaded.add(msg)
+                inbox.discard(key)
+
         #add the modified message, with new flags and subdir, to the mailbox. 
         #Remember that 'msg' has no necessary relation to the actual file in the mailbox - 
         #it's just a representation that we manipulate. 
-        inbox.update({key:msg}) 
+        # inbox.update({key:msg}) 
+        inbox.flush()
 
 
             
