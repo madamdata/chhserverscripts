@@ -60,6 +60,7 @@ for key, msg in cmdMailbox.iteritems():
         cmdMailbox.flush()
             
 
+msgsToDelete={} #dictionary of messages to delete. will store a unique list of messages to be moved out of the inbox
 # ---- next, check the inbox for new attachments ----
 for key, msg in inbox.iteritems():            # step through all the mail in the inbox
     #print(key)
@@ -109,19 +110,22 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 with open(filepath, 'wb') as fp:
                     fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
 
-                # --- move the message out of the inbox ---
-                # downloaded.add(msg)
-                # shutil.copyfile(inboxFolderPath+"new/"+key, downloadFolderPath+"cur/"+key)
-                msg.set_subdir('cur') # if it's in 'new', mark message as read
-                msg.add_flag('S') # set 'read' flag (not sure how this is different from putting it in cur instead of new)
-                downloaded.add(msg)
-                inbox.discard(key)
+                # --- mark message to be moved out of inbox (can't do it straight away cos there may be more attachments in this message! ---
+                # msg.set_subdir('cur') # if it's in 'new', mark message as read
+                # msg.add_flag('S') # set 'read' flag (not sure how this is different from putting it in cur instead of new)
+                # inbox.update({key:msg}) #update flags
+                msgsToDelete[key] = msg
 
-        #add the modified message, with new flags and subdir, to the mailbox. 
-        #Remember that 'msg' has no necessary relation to the actual file in the mailbox - 
-        #it's just a representation that we manipulate. 
-        # inbox.update({key:msg}) 
-        inbox.flush()
+#print(msgsToDelete)
+for key,msg in msgsToDelete.items():
+    newKey=downloaded.add(msg)
+    newMsg=downloaded.get_message(newKey)
+    newMsg.set_subdir('cur')
+    newMsg.add_flag('S')
+    downloaded.update({newKey:newMsg})
+    inbox.discard(key)
+    downloaded.flush()
+    inbox.flush()
 
 
             
