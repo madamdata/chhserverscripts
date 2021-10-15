@@ -63,7 +63,6 @@ for key, msg in cmdMailbox.iteritems():
 msgsToDelete={} #dictionary of messages to delete. will store a unique list of messages to be moved out of the inbox
 # ---- next, check the inbox for new attachments ----
 for key, msg in inbox.iteritems():            # step through all the mail in the inbox
-    #print(key)
     if msg.get_subdir() == 'new':
         sender = msg['From']
         to = msg['To'].split('@')[0].replace("<", "").lower() #grab all the stuff before the '@', then split by '+' and strip any < 
@@ -71,8 +70,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
         toComponents.pop(0) #remove 0th element: the 'po' head
         pathString = '/'.join(toComponents) + '/' #turn it into a path by putting / between items
         pathStringForFilename = '_'.join(toComponents) #with _ instead of / for filename
-        # print(pathString)
-        currentDatestring = datetime.datetime.now().strftime("%m%d%Y_%H%M")
+        currentDatestring = datetime.datetime.now().strftime("%m%d%Y_%H:%M")
         sentDatestring = dateparser.parse(msg['Date']).strftime("%m%d_%Y")
 
         # ---- subpart handling ----
@@ -94,7 +92,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 filename, ext = os.path.splitext(filename)
                 filename = pathStringForFilename + "__" + filename + "__" + sentDatestring + ext
                 filename = filename.replace(" ", "") #strip whitespace
-                print("attachment found: " + x.get_content_type() + ": " + filename + " at " + currentDatestring)
+                print(currentDatestring + " : attachment found (" + x.get_content_type() + ") " + filename)
                 filepath = attachmentFolderPath + pathString + filename
 
                 # ---- check for duplicates and incremenk file name if needed, using next_path function defined above ----
@@ -106,23 +104,24 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
 
                 # --- write the attachment data into a file with the correct name and extension ----
                 os.makedirs(os.path.dirname(filepath), exist_ok=True) #make directory if it doesn't already exist
-                # print(filepath)
                 with open(filepath, 'wb') as fp:
                     fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
 
                 # --- mark message to be moved out of inbox (can't do it straight away cos there may be more attachments in this message! ---
-                # msg.set_subdir('cur') # if it's in 'new', mark message as read
-                # msg.add_flag('S') # set 'read' flag (not sure how this is different from putting it in cur instead of new)
-                # inbox.update({key:msg}) #update flags
                 msgsToDelete[key] = msg
 
 #print(msgsToDelete)
+
+# --- Move the messages to 'downloaded' mailbox ---
+# using 'msgsToDelete' dictionary, find every msg we just downloaded an attachment from, add it to downloaded
+# and remove from inbox
+
 for key,msg in msgsToDelete.items():
     newKey=downloaded.add(msg)
-    newMsg=downloaded.get_message(newKey)
-    newMsg.set_subdir('cur')
-    newMsg.add_flag('S')
-    downloaded.update({newKey:newMsg})
+    # newMsg=downloaded.get_message(newKey)
+    # newMsg.set_subdir('cur')
+    # newMsg.add_flag('S')
+    # downloaded.update({newKey:newMsg})
     inbox.discard(key)
     downloaded.flush()
     inbox.flush()
