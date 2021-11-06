@@ -1,8 +1,4 @@
-import mailbox
-import os
-# import shutil
-import datetime
-import dateparser
+import mailbox, os, datetime, dateparser, re
 from email.header import decode_header
 
 # ---- path and variable definitions ----
@@ -65,9 +61,21 @@ msgsToDelete={} #dictionary of messages to delete. will store a unique list of m
 for key, msg in inbox.iteritems():            # step through all the mail in the inbox
     if msg.get_subdir() == 'new':
         sender = msg['From']
-        to = msg['To'].split('@')[0].replace("<", "").lower() #grab all the stuff before the '@', then split by '+' and strip any < 
-        toComponents = to.split('+')
-        toComponents.pop(0) #remove 0th element: the 'po' head
+        tos = msg.get_all('To', [])
+        to = toComponents = ''
+        pathString = pathStringForFilename =  ''
+        for addr in tos:
+            # to = addr.replace('<', '').replace('>', '').lower()
+            # to = msg['To'].split('@')[0].replace("<", "").lower() #grab all the stuff before the '@', then split by '+' and strip any < 
+                # print(addr)
+            match = re.search(r'po.*@chh.sg', addr)
+            try:
+                to = match[0]
+                to = to.split('@')[0]
+                toComponents = to.split('+')
+                toComponents.pop(0) #remove 0th element: the 'po' head
+            except TypeError:
+                print("po email not found in 'To' field")
         pathString = '/'.join(toComponents) + '/' #turn it into a path by putting / between items
         pathStringForFilename = '_'.join(toComponents) #with _ instead of / for filename
         currentDatestring = datetime.datetime.now().strftime("%m%d%Y_%H:%M")
