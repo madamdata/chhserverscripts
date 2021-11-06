@@ -4,7 +4,7 @@ DATESTRING=$(date +%d\_%b\_%H:%M)
 WORKINGDIRECTORY="/home/pi/mail"
 BACKUPLOGFILENAME="attachments/log/backup/aslog$DATESTRING.log"
 
-mv attachments/log/attachscript.log $BACKUPLOGFILENAME && touch attachscript.log
+cd $WORKINGDIRECTORY && mv attachments/log/attachscript.log $BACKUPLOGFILENAME && touch attachscript.log
 echo "Backing up to $BACKUPLOGFILENAME ..."
 
 
