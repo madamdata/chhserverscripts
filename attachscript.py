@@ -62,6 +62,10 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
     if msg.get_subdir() == 'new':
         sender = msg['From']
         tos = msg.get_all('To', [])
+        ccs = msg.get_all('Cc', [])
+        bccs = msg.get_all('Bcc', [])
+        tos = tos + ccs + bccs
+        print(tos)
         to = toComponents = ''
         pathString = pathStringForFilename =  ''
         for addr in tos:
@@ -75,7 +79,8 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 toComponents = to.split('+')
                 toComponents.pop(0) #remove 0th element: the 'po' head
             except TypeError:
-                print("po email not found in 'To' field")
+                pass
+                # print("po email not found in 'To' field")
         pathString = '/'.join(toComponents) + '/' #turn it into a path by putting / between items
         pathStringForFilename = '_'.join(toComponents) #with _ instead of / for filename
         currentDatestring = datetime.datetime.now().strftime("%m%d%Y_%H:%M")
