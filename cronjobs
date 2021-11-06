@@ -3,3 +3,6 @@
 */3 * * * * /home/pi/mail/chhserverscripts/syncAttach.sh
 
 0 20 * * * /home/pi/mail/chhserverscripts/backupScript.sh
+
+0 0 1 * * /home/pi/mail/chhserverscripts/logbackupScript.sh
+
