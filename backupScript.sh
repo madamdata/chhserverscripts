@@ -5,7 +5,7 @@ WORKINGDIRECTORY="/home/pi/mail"
 BACKUPFILENAME="backup/$DATESTRING.zip"
 BACKUPLOGFILENAME="attachments/log/backup/aslog$DATESTRING.log"
 
-cd $WORKINGDIRECTORY && zip -r $BACKUPFILENAME attachments && mv attachments/log/attachscript.log $BACKUPLOGFILENAME
+cd $WORKINGDIRECTORY && zip -r $BACKUPFILENAME attachments && mv attachments/log/attachscript.log $BACKUPLOGFILENAME && touch attachscript.log
 echo "Backing up to $BACKUPFILENAME ..."
 #cp /home/pi/Polytope/server/evennia.db3 $BACKUPFILENAME
 
