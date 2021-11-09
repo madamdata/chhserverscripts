@@ -12,7 +12,7 @@ first, navigate to the folder with scraper.py
 for f in myFolderName/*.xlsx; do in2csv "$f" > "myFolderName/${f%.xlsx}.csv"; done
 
 (executes the scraper on every csv file in a folder)
-find (myFolderName) -name *.csv -exec python3 scraper.py {} \;
+find (myFolderName) -name *.csv -exec python3 scraper.py {} \\;
 
 
 
