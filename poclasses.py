@@ -11,10 +11,6 @@ class PO:
 
     def sync(self, remote_table):
         print("test")
-        # pass
-
-
-
 
 class POItem:
 
@@ -45,21 +41,6 @@ class POItem:
             self.input_dict[item] = None
             self.output_dict={}
 
-    # def __getattr__(self, name):
-        # if name in self:
-            # return self[name]
-        # else:
-            # raise AttributeError("No such attribute: " + name)
-
-    # def __setattr__(self, name, value):
-        # self[name] = value
-
-    # def __delattr__(self, name):
-        # if name in self:
-            # del self[name]
-        # else:
-            # raise AttributeError("No such attribute: " + name)
-
     def addEntry(self, entryTuple):
         """
         Inputs an entry into input_dict. Coerces all of the aliases in input_params_list
@@ -76,7 +57,7 @@ class POItem:
     def parse_model_string(self, modelstring):
         fields = {}
         match = re.match(r'^(BIF|RSM|AND)(-Ex)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
-        # print(match)
+
         try: 
             print("group4:", match.group(4))
             item, size, impeller = \
@@ -110,22 +91,6 @@ class POItem:
                     output_data[k] = v
             except AttributeError:
                 pass
-                # print("Cannot split model string into fields: no regex match")
-            # try:
-                # item, rest = model_string.split(' ', 1)
-                # if item == 'AND' or item == 'AND-Ex':
-                    # item = 'Ax'
-                # elif item == 'BIF':
-                    # item = 'Bif'
-                # # output_data.append(('Item', item))
-                # output_data['Item'] = item
-                # size, impeller = rest.split('/', 1)
-                # # output_data.append(('Size', size))
-                # output_data['Size'] = size
-                # # output_data.append(('Impeller', impeller))
-                # output_data['Impeller'] = impeller
-            # except ValueError:
-                # print('model string not parseable')
 
         elif key == 'Motor Size':
             motor_string = self.input_dict['Motor Size'];
@@ -138,28 +103,21 @@ class POItem:
                 pass
             except TypeError: #no motor string
                 pass
-            # output_data.append(('Motor Size', motor_number))
             if motor_number == '4':
                 motor_number = '4.0'
             output_data['Motor Size'] = motor_number
         elif key == 'Qty':
             qty = self.input_dict['Qty']
             qty = int(qty)
-            # output_data.append(('Qty', qty))
             output_data['Qty'] = qty
         elif key == 'Price per Unit':
             ppu = self.input_dict['Price per Unit']
             ppu = float(ppu)
-            # output_data.append(('Price per Unit', ppu))
             output_data['Price per Unit'] = ppu
             
         else:
-            # output_datum = self.input_dict[key]
-            # if output_datum == '':
-                # output_datum = None
             output_data[key] = self.input_dict[key]
 
-        # print(output_data)
         return output_data
 
     def convertallparams(self):
@@ -180,13 +138,5 @@ class POItem:
         return self.output_dict
 
     def update_remote(self, remote_table):
-        # for key,value in self.output_dict:
         print(self.output_dict)
         remote_table.create(self.output_dict)
-
-        # pass
-        
-
-
-# testItem = POItem()
-# print(testItem.model)

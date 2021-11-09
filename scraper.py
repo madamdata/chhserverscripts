@@ -30,7 +30,6 @@ note = None
 
 po_items = []
 
-# po = poclasses.PO("111111")
 
 # --- load environment and airtable API ---
 load_dotenv()
@@ -96,8 +95,9 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
                 deliverydate = dateobj.strftime('%Y-%m-%d')
             except AttributeError: #if no match, .group(1) of None returns this error.
                 print("Delivery date does not match known formats. No regex match.")
+            except ValueError:
+                print("looks like a date but can't be parsed. Ask the sysadmin")
 
-            # # print(deliverydate)
         elif item == issuedate_string:
             rawdate = rows[rownumber][colnumber+1]
             try:
@@ -106,6 +106,8 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
                 issuedate = dateobj.strftime('%Y-%m-%d')
             except AttributeError:
                 print("issue date does not match known formats")
+            except ValueError:
+                print("looks like a date but can't be parsed. Ask the sysadmin")
         elif item == note_string:
             note = rows[rownumber][colnumber+1]
 
@@ -117,17 +119,6 @@ for rownumber, row in enumerate(rows):
             po_items = scrape_data(rows, rownumber, colnumber)#if the thing in the cell is the word 'ITEM'
 
 for poitem in po_items: 
-    # print(poitem['PO Delivery Date'])
     poitem.convertallparams()
     poitem.update_remote(remote_table)
 
-# print(remote_table.fields())
-
-
-# print(key)
-
-
-# rotated = list(zip(*colData[::]))
-# for item in rotated:
-    # print('|'.join(item))
-    # print('\n')
