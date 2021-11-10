@@ -15,25 +15,18 @@ downloaded = mailbox.Maildir("downloaded", factory=None, create=False) #place to
 cmdMailbox = mailbox.Maildir('commands', factory=None, create=False) #create a mailbox object for the special logs mailbox
 
 # ---- function definitions ----
-def next_path(path_pattern, ext):
+def next_path(path_pattern, path_pattern_processed, ext):
     """
-    adapted from stackexchange ... 
-    adds (1) (2) etc to filenames if a file exists at the specified path
-    Runs in log(n) time where n is the number of existing files in sequence (more efficient than a brute force search)
+    adds (1) (2) etc to filenames if a file exists at the specified path or
+    at the path, but missing the ++
     """
     i = 1
+    print(path_pattern_processed)
 
-    # First do an exponential search
-    while os.path.exists(path_pattern % i + ext):
-        i = i * 2
-    # Result lies somewhere in the interval (i/2..i]
-    # We call this interval (a..b] and narrow it down until a + 1 = b
-    a, b = (i // 2, i)
-    while a + 1 < b:
-        c = (a + b) // 2 # interval midpoint
-        a, b = (c, b) if os.path.exists(path_pattern % c) else (a, c)
+    while os.path.exists(path_pattern % i + ext) or os.path.exists(path_pattern_processed % i + ext):
+        i = i + 1
 
-    return path_pattern % b + ext
+    return path_pattern % i + ext
 
 
 # --- MAIN BODY ----
@@ -81,7 +74,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
             except TypeError:
                 pass
                 # print("po email not found in 'To' field")
-        pathString = '/'.join(toComponents) + '/unprocessed/' #turn it into a path by putting / between items
+        pathString = '/'.join(toComponents) + '/' #turn it into a path by putting / between items
         pathStringForFilename = '_'.join(toComponents) #with _ instead of / for filename
         currentDatestring = datetime.datetime.now().strftime("%m%d%Y_%H:%M")
         sentDatestring = dateparser.parse(msg['Date']).strftime("%m%d_%Y")
@@ -103,22 +96,28 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                     
                 # ---- create a filename by adding the name of the box and the date ----
                 filename, ext = os.path.splitext(filename)
-                filename = pathStringForFilename + "__" + filename + "__" + sentDatestring + ext
+                filenameprocessed = pathStringForFilename + "__" + filename + "__" + sentDatestring + ext #just for checking duplicates
+                filename = "++" + filenameprocessed
+ 
                 filename = filename.replace(" ", "") #strip whitespace
                 print(currentDatestring + " : attachment found (" + x.get_content_type() + ") " + filename)
                 filepath = attachmentFolderPath + pathString + filename
+                filepathprocessed = attachmentFolderPath + pathString + filenameprocessed #again just for checking duplicates
 
                 # ---- check for duplicates and incremenk file name if needed, using next_path function defined above ----
-                if os.path.exists(filepath):                
+                if os.path.exists(filepath) or os.path.exists(filepathprocessed):                
                     print(filename + " : File with that name exists already! Incrementing file name.")
                     path, ext = os.path.splitext(filepath)
                     path = path + "(%s)"
-                    filepath = next_path(path, ext)
+                    path_processed, ext2 = os.path.splitext(filepathprocessed)
+                    path_processed = path_processed + "(%s)"
+                    filepath = next_path(path, path_processed, ext)
 
                 # --- write the attachment data into a file with the correct name and extension ----
                 os.makedirs(os.path.dirname(filepath), exist_ok=True) #make directory if it doesn't already exist
                 with open(filepath, 'wb') as fp:
                     fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
+                
 
                 # --- mark message to be moved out of inbox (can't do it straight away cos there may be more attachments in this message! ---
                 msgsToDelete[key] = msg
