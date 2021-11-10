@@ -21,7 +21,7 @@ def next_path(path_pattern, path_pattern_processed, ext):
     at the path, but missing the ++
     """
     i = 1
-    print(path_pattern_processed)
+    # print(path_pattern_processed)
 
     while os.path.exists(path_pattern % i + ext) or os.path.exists(path_pattern_processed % i + ext):
         i = i + 1
