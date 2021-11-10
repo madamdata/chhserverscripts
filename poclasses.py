@@ -59,7 +59,7 @@ class POItem:
         match = re.match(r'^(BIF|RSM|AND)(-Ex)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
 
         try: 
-            print("group4:", match.group(4))
+            # print("group4:", match.group(4))
             item, size, impeller = \
                     match.group(1), match.group(4), match.group(5)
             if item == 'AND':
@@ -105,6 +105,8 @@ class POItem:
                 pass
             if motor_number == '4':
                 motor_number = '4.0'
+            elif motor_number == '3':
+                motor_number = '3.0'
             output_data['Motor Size'] = motor_number
         elif key == 'Qty':
             qty = self.input_dict['Qty']

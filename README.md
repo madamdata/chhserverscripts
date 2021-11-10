@@ -9,7 +9,8 @@ usage for now:
 first, navigate to the folder with scraper.py
 
 (converts all xlsx in myFolderName into csv)
-for f in myFolderName/*.xlsx; do in2csv "$f" > "myFolderName/${f%.xlsx}.csv"; done
+for f in *.xlsx; do in2csv -n "$f" | xargs -I % sh -c "in2csv $f --sheet % > $f_sheet%.csv"; done
+
 
 (executes the scraper on every csv file in a folder)
 find ../testdata -name *.csv -exec python3 scraper.py {} \\;
