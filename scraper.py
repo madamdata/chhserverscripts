@@ -35,7 +35,7 @@ po_items = []
 load_dotenv()
 key = os.environ['AIRTABLEKEY']
 baseid = os.environ['AIRTABLEBASEID']
-remote_table = pyairtable.Table(key, baseid, 't1exp')
+remote_table = pyairtable.Table(key, baseid, 'Table 1')
 
 def scrape_data(table, startrow, startcol):
     """ takes a table, start row and start column,
