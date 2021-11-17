@@ -3,8 +3,9 @@ from dotenv import load_dotenv, dotenv_values
 import poclasses
 
 #--- open file and set up some variables ---
+datestring = datetime.datetime.now().strftime("%d%b%Y-%H:%M")
 filepath = sys.argv[1]
-print(filepath)
+print(datestring + " :scraping " + filepath + " ...")
 csvfile = open(filepath, newline='')
 reader = csv.reader(csvfile, dialect='excel')
 rows = []
