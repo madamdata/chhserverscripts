@@ -58,7 +58,6 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
         ccs = msg.get_all('Cc', [])
         bccs = msg.get_all('Bcc', [])
         subject = msg['Subject']
-        print("New email found in inbox. Subject: " + subject)
         tos = tos + ccs + bccs
         # print(tos)
         to = toComponents = ''
@@ -84,7 +83,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
         # ---- subpart handling ----
         for x in msg.walk():                                # msg.walk() goes through all the subparts depth-first
             if x.get_content_disposition() == 'attachment': # proceed only if this subpart is an attachment 
-
+                # print("New email attachment found in inbox. Subject: " + subject)
                 # ---- figure out what the header is based on RFC 2047 codes - to ensure unicode stuff eg Chinese chars appear correctly --- 
                 rawfilename = x.get_filename()
                 charset = None
@@ -107,7 +106,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
  
                 filename = filename.replace(" ", "") #strip whitespace
                 content_type = x.get_content_type()
-                print(currentDatestring + " : attachment found (" + x.get_content_type() + ") " + filename)
+                print(currentDatestring + " : attachment found in msg: " + subject +  " - " + filename)
                 filepath = attachmentFolderPath + pathString + filename
                 filepathprocessed = attachmentFolderPath + pathString + filenameprocessed #again just for checking duplicates
 
@@ -126,7 +125,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                     with open(filepath, 'wb') as fp:
                         fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
                 else:
-                    print("Not a spreadsheet or pdf... not downloading.")
+                    print("Not a spreadsheet or pdf... not downloading: (" + content_type + ")" )
                 
 
                 # --- mark message to be moved out of inbox (can't do it straight away cos there may be more attachments in this message! ---
