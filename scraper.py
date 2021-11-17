@@ -85,32 +85,40 @@ def scrape_data(table, startrow, startcol):
 for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'model' headings etc
     for colnumber, item in enumerate(row): 
         if item == ponumber_string:
-            ponumber = rows[rownumber][colnumber+1].replace(' ', '').replace(':','')
+            ponumber = rows[rownumber][colnumber+1]
+            ponumber = ponumber + rows[rownumber][colnumber+2]
+            ponumber = ponumber.replace(' ', '').replace(':','')
         elif item == project_string:
             project = rows[rownumber][colnumber+1]
+            project = project + rows[rownumber][colnumber+2]
         elif item == deliverydate_string:
-            rawdate = rows[rownumber][colnumber+1]
+            rawdate = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2]
+            rawdate = rawdate.replace(':', '')
             try:
                 datestring = re.match(r'.*?([0-9/]+)', rawdate).group(1)
                 dateobj = datetime.datetime.strptime(datestring, '%d/%m/%Y')
-                deliverydate = dateobj.strftime('%Y-%m-%d')
+                deliverydate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
             except AttributeError: #if no match, .group(1) of None returns this error.
                 print("Delivery date does not match known formats. No regex match.")
             except ValueError:
-                print("looks like a date but can't be parsed. Ask the sysadmin")
+                print("Delivery date looks like a date but can't be parsed: ", rawdate)
 
         elif item == issuedate_string:
-            rawdate = rows[rownumber][colnumber+1]
+            rawdate = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2]
+            rawdate = rawdate.replace(':', '')
             try:
-                datestring = re.match(r'.*?([0-9/]+)', rawdate).group(1)
-                dateobj = datetime.datetime.strptime(datestring, '%d/%m/%Y')
-                issuedate = dateobj.strftime('%Y-%m-%d')
+                datestring = re.match(r'.*?([0-9/-]+)', rawdate).group(1)
+                # print(datestring)
+                dateobj = datetime.datetime.strptime(datestring, '%Y-%m-%d')
+                issuedate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
             except AttributeError:
                 print("issue date does not match known formats")
             except ValueError:
-                print("looks like a date but can't be parsed. Ask the sysadmin")
+                print("Issue date looks like a date but can't be parsed: ", rawdate)
+
         elif item == note_string:
             note = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2] + rows[rownumber][colnumber+3]
+            note = note + rows[rownumber+1][colnumber+1] + rows[rownumber+1][colnumber+2] + rows[rownumber+1][colnumber+3]
             # print(note)
 
 # --- second pass - to get the actual items ---
@@ -122,5 +130,11 @@ for rownumber, row in enumerate(rows):
 
 for poitem in po_items: 
     poitem.convertallparams()
+    output_dict = poitem.output_dict
+    output_dict_printstring = ""
+    for k, v in output_dict.items():
+        output_dict_printstring = output_dict_printstring + " " + str(k) + " : " +  str(v) +  "   |   " 
+    print(output_dict_printstring)
     poitem.update_remote(remote_table)
 
+print("         ----           ")

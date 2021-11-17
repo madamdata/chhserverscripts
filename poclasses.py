@@ -71,10 +71,10 @@ class POItem:
             fields['Impeller'] = impeller
             return fields
         except AttributeError:
-            print("Model string doesn't match any known configuration!")
+            print("Model string doesn't match any known configuration: ", modelstring)
             return None
         except IndexError:
-            print("not enough matches, something is wrong.")
+            print("not enough matches, something is wrong: ", modelstring)
             return None
             
 
@@ -140,5 +140,4 @@ class POItem:
         return self.output_dict
 
     def update_remote(self, remote_table):
-        print(self.output_dict)
         remote_table.create(self.output_dict)

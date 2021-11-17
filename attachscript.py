@@ -57,6 +57,8 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
         tos = msg.get_all('To', [])
         ccs = msg.get_all('Cc', [])
         bccs = msg.get_all('Bcc', [])
+        subject = msg['Subject']
+        print("New email found in inbox. Subject: " + subject)
         tos = tos + ccs + bccs
         # print(tos)
         to = toComponents = ''
@@ -85,7 +87,11 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
 
                 # ---- figure out what the header is based on RFC 2047 codes - to ensure unicode stuff eg Chinese chars appear correctly --- 
                 rawfilename = x.get_filename()
-                filename, charset = decode_header(rawfilename)[0] 
+                charset = None
+                try:
+                    filename, charset = decode_header(rawfilename)[0] 
+                except TypeError:
+                    print("Some weird stuff going on with the header. Raw filename: ", rawfilename)
                 if charset == 'utf-8':
                     filename = filename.decode('utf-8')
                 elif charset == None:
@@ -100,6 +106,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 filename = "++" + filenameprocessed
  
                 filename = filename.replace(" ", "") #strip whitespace
+                content_type = x.get_content_type()
                 print(currentDatestring + " : attachment found (" + x.get_content_type() + ") " + filename)
                 filepath = attachmentFolderPath + pathString + filename
                 filepathprocessed = attachmentFolderPath + pathString + filenameprocessed #again just for checking duplicates
@@ -115,8 +122,11 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
 
                 # --- write the attachment data into a file with the correct name and extension ----
                 os.makedirs(os.path.dirname(filepath), exist_ok=True) #make directory if it doesn't already exist
-                with open(filepath, 'wb') as fp:
-                    fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
+                if 'spreadsheet' in content_type or 'pdf' in content_type:
+                    with open(filepath, 'wb') as fp:
+                        fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
+                else:
+                    print("Not a spreadsheet or pdf... not downloading.")
                 
 
                 # --- mark message to be moved out of inbox (can't do it straight away cos there may be more attachments in this message! ---
