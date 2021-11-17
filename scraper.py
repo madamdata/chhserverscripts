@@ -36,7 +36,7 @@ po_items = []
 load_dotenv()
 key = os.environ['AIRTABLEKEY']
 baseid = os.environ['AIRTABLEBASEID']
-remote_table = pyairtable.Table(key, baseid, 't1exp')
+remote_table = pyairtable.Table(key, baseid, 'Table 1')
 
 def scrape_data(table, startrow, startcol):
     """ takes a table, start row and start column,
@@ -111,6 +111,7 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
                 print("looks like a date but can't be parsed. Ask the sysadmin")
         elif item == note_string:
             note = rows[rownumber][colnumber+1]
+            # print(note)
 
 # --- second pass - to get the actual items ---
 for rownumber, row in enumerate(rows):
