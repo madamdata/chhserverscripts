@@ -110,7 +110,7 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
             except ValueError:
                 print("looks like a date but can't be parsed. Ask the sysadmin")
         elif item == note_string:
-            note = rows[rownumber][colnumber+1]
+            note = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2] + rows[rownumber][colnumber+3]
             # print(note)
 
 # --- second pass - to get the actual items ---
