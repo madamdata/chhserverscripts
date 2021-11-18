@@ -96,7 +96,7 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
             rawdate = rawdate.replace(':', '')
             try:
                 datestring = re.match(r'.*?([0-9/]+)', rawdate).group(1)
-                dateobj = datetime.datetime.strptime(datestring, '%d/%m/%Y')
+                dateobj = datetime.datetime.strptime(datestring, '%Y-%m-%d')
                 deliverydate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
             except AttributeError: #if no match, .group(1) of None returns this error.
                 print("Delivery date does not match known formats. No regex match.")
