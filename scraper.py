@@ -17,7 +17,7 @@ numCols = len(rows[0])
 dataColumns = ['ITEM', 'MODEL', 'T/BOX', 'Motor', 'Qty/Uts', 'S$ U/P', 'S$ Amt']
 ponumber_string = 'P/O No'
 ponumber = '-'
-project_string = 'PROJECT : '
+project_string = 'PROJECT'
 project = '-'
 
 issuedate_string = 'DATE'
@@ -95,7 +95,7 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
             rawdate = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2]
             rawdate = rawdate.replace(':', '')
             try:
-                datestring = re.match(r'.*?([0-9/]+)', rawdate).group(1)
+                datestring = re.match(r'.*?([0-9/-]+)', rawdate).group(1)
                 dateobj = datetime.datetime.strptime(datestring, '%Y-%m-%d')
                 deliverydate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
             except AttributeError: #if no match, .group(1) of None returns this error.

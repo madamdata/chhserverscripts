@@ -114,7 +114,15 @@ class POItem:
             output_data['Qty'] = qty
         elif key == 'Price per Unit':
             ppu = self.input_dict['Price per Unit']
-            ppu = float(ppu)
+            try:
+                ppu = float(ppu)
+            except ValueError:
+                if ppu == '-': 
+                    ppu = None
+                    pass
+                else:
+                    print("Price per unit doesn't seem to be a number.")
+
             output_data['Price per Unit'] = ppu
             
         else:
