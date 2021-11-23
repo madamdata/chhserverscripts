@@ -63,9 +63,6 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
         to = toComponents = ''
         pathString = pathStringForFilename =  ''
         for addr in tos:
-            # to = addr.replace('<', '').replace('>', '').lower()
-            # to = msg['To'].split('@')[0].replace("<", "").lower() #grab all the stuff before the '@', then split by '+' and strip any < 
-                # print(addr)
             match = re.search(r'po.*@chh.sg', addr)
             try:
                 to = match[0]
@@ -104,7 +101,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 filenameprocessed = pathStringForFilename + "__" + filename + "__" + sentDatestring + ext #just for checking duplicates
                 filename = "++" + filenameprocessed
  
-                filename = filename.replace(" ", "") #strip whitespace
+                filename = filename.replace(" ", "").replace("\n", "") #strip whitespace and line breaks
                 content_type = x.get_content_type()
                 print(currentDatestring + " : attachment found in msg: " + subject +  " - " + filename)
                 filepath = attachmentFolderPath + pathString + filename

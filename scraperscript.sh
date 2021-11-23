@@ -29,9 +29,6 @@ fi
 #print pdfs
 #for pdfp in ++*.pdf; do lp -d CHH_HP_LASER_2 -o ColorModel=DeviceGray -o print-scaling=fit $pdfp; done 
 
-
-#scrape 
-
 #remove all csvs and any pdfs created by this script. (pre existing pdfs have already been renamed
 #and so won't be removed)
 
