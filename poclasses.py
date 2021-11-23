@@ -56,26 +56,39 @@ class POItem:
 
     def parse_model_string(self, modelstring):
         fields = {}
-        match = re.match(r'^(BIF|RSM|AND)(-Ex)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
-
-        try: 
-            # print("group4:", match.group(4))
+        match = re.match(r'^(BIF|RSM|AND)(-Ex|-GVD)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
+        match2 = re.match(r'^RS ([0-9]+)(-1D)?', modelstring)
+        match3 = re.match(r'^(Matching Flanges) ([0-9]+)mm$', modelstring)
+        print(modelstring)
+        item = size = impeller = silencer_size = None
+        if match:
             item, size, impeller = \
                     match.group(1), match.group(4), match.group(5)
+            
+            extra = match.group(2)
             if item == 'AND':
                 item = 'Ax'
             elif item == 'BIF':
                 item = 'Bif'
-            fields['Item'] = item
-            fields['Size'] = size
-            fields['Impeller'] = impeller
-            return fields
-        except AttributeError:
+
+        elif match2:
+            item = 'RS'
+            size = match2.group(1) + '0'
+            silencer_size = match2.group(2)
+
+        elif match3:
+            item = 'MFlanges'
+            size = '560'
+
+        if not (match or match2):
             print("Model string doesn't match any known configuration: ", modelstring)
             return None
-        except IndexError:
-            print("not enough matches, something is wrong: ", modelstring)
-            return None
+
+        fields['Item'] = item
+        fields['Size'] = size
+        fields['Impeller'] = impeller
+        fields['Silencer Size'] = silencer_size
+        return fields
             
 
     def convert(self, key):
