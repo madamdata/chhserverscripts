@@ -58,7 +58,7 @@ class POItem:
         fields = {}
         match = re.match(r'^(BIF|RSM|AND)(-Ex|-GVD)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
         match2 = re.match(r'^RS ([0-9]+)(-1D)?', modelstring)
-        match3 = re.match(r'^(Matching Flanges) ([0-9]+)mm$', modelstring)
+        match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm$', modelstring)
         print(modelstring)
         item = size = impeller = silencer_size = None
         if match:
@@ -77,7 +77,11 @@ class POItem:
             silencer_size = match2.group(2)
 
         elif match3:
-            item = 'MFlanges'
+            gr1 = match3.group(1)
+            if gr1 == "Matching Flanges":
+                item = 'MFlanges'
+            elif gr1 == "Mounting Feet":
+                item = 'MFeet'
             size = match3.group(2)
 
         if not (match or match2 or match3):
