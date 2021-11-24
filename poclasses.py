@@ -78,9 +78,9 @@ class POItem:
 
         elif match3:
             item = 'MFlanges'
-            size = '560'
+            size = match3.group(2)
 
-        if not (match or match2):
+        if not (match or match2 or match3):
             print("Model string doesn't match any known configuration: ", modelstring)
             return None
 

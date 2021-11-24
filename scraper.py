@@ -95,26 +95,65 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
             rawdate = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2]
             rawdate = rawdate.replace(':', '')
             try:
-                datestring = re.match(r'.*?([0-9/-]+)', rawdate).group(1)
+                datestring = re.match(r'.*?([0-9\/-]+)', rawdate).group(1)
+            except AttributeError: #if no match, group(1) above returns this error
+                if rawdate == "ASAP": 
+                    print("Delivery date ASAP: setting to today.")
+                    # deliverydate = datetime.datetime.now().strftime('%Y-%m-%d')  
+                    datestring = datetime.datetime.now().strftime('%Y-%m-%d')  
+                else:
+                    print("Delivery date does not match known formats: ", rawdate)
+
+            try: 
                 dateobj = datetime.datetime.strptime(datestring, '%Y-%m-%d')
+            except ValueError: #string is not in the specified format
+                print("Delivery Date not in %Y-%m-%d format: ", datestring)
+
+            try: 
+                dateobj = datetime.datetime.strptime(datestring, '%d/%m/%Y')
+            except ValueError: #string is not in the specified format
+                print("Delivery Date not in %d/%m/%Y format: ", datestring)
+
+            try: 
                 deliverydate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
-            except AttributeError: #if no match, .group(1) of None returns this error.
-                print("Delivery date does not match known formats. No regex match.")
-            except ValueError:
-                print("Delivery date looks like a date but can't be parsed: ", rawdate)
+            except AttributeError: #dateobj is None
+                print("Delivery date object invalid: ", dateobj, rawdate)
+            # try:
+                # datestring = re.match(r'.*?([0-9\/-]+)', rawdate).group(1)
+                # dateobj = datetime.datetime.strptime(datestring, '%Y-%m-%d')
+                # deliverydate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
+            # except AttributeError: #if no match, .group(1) of None returns this error.
+                # print("Delivery date does not match known formats. No regex match: ", rawdate)
+                # if rawdate == "ASAP": 
+                    # deliverydate = datetime.datetime.now().strftime('%Y-%m-%d')  
+            # except ValueError:
+                # print("Delivery date looks like a date but can't be parsed: ", rawdate)
 
         elif item == issuedate_string:
             rawdate = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2]
             rawdate = rawdate.replace(':', '')
+            dateobj = None
+
             try:
-                datestring = re.match(r'.*?([0-9/-]+)', rawdate).group(1)
-                # print(datestring)
-                dateobj = datetime.datetime.strptime(datestring, '%Y-%m-%d')
-                issuedate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
+                datestring = re.match(r'.*?([0-9\/-]+)', rawdate).group(1)
             except AttributeError:
-                print("issue date does not match known formats")
+                print("Issue date does not match known formats: ", rawdate)
+
+            try: 
+                dateobj = datetime.datetime.strptime(datestring, '%Y-%m-%d')
             except ValueError:
-                print("Issue date looks like a date but can't be parsed: ", rawdate)
+                print("Issue Date not in %Y-%m-%d format: ", datestring)
+
+            try: 
+                dateobj = datetime.datetime.strptime(datestring, '%d/%m/%Y')
+            except ValueError:
+                print("Issue Date not in %d/%m/%Y format: ", datestring)
+
+            try: 
+                issuedate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
+            except AttributeError: #dateobj is None
+                print("Issue date object invalid: ", dateobj, rawdate)
+
 
         elif item == note_string:
             note = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2] + rows[rownumber][colnumber+3]
