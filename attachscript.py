@@ -74,13 +74,12 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 # print("po email not found in 'To' field")
         pathString = '/'.join(toComponents) + '/' #turn it into a path by putting / between items
         pathStringForFilename = '_'.join(toComponents) #with _ instead of / for filename
-        currentDatestring = datetime.datetime.now().strftime("%m%d%Y_%H:%M")
+        currentDatestring = datetime.datetime.now().strftime("%d%m%Y_%H:%M")
         sentDatestring = dateparser.parse(msg['Date']).strftime("%m%d_%Y")
 
         # ---- subpart handling ----
         for x in msg.walk():                                # msg.walk() goes through all the subparts depth-first
             if x.get_content_disposition() == 'attachment': # proceed only if this subpart is an attachment 
-                # print("New email attachment found in inbox. Subject: " + subject)
                 # ---- figure out what the header is based on RFC 2047 codes - to ensure unicode stuff eg Chinese chars appear correctly --- 
                 rawfilename = x.get_filename()
                 charset = None
@@ -103,7 +102,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
  
                 filename = filename.replace(" ", "").replace("\n", "") #strip whitespace and line breaks
                 content_type = x.get_content_type()
-                print(currentDatestring + " : attachment found in msg: " + subject +  " - " + filename)
+                print(currentDatestring + ": attachment found in msg (" + subject +  ") -- " + filename)
                 filepath = attachmentFolderPath + pathString + filename
                 filepathprocessed = attachmentFolderPath + pathString + filenameprocessed #again just for checking duplicates
 

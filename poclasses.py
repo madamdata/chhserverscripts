@@ -25,6 +25,7 @@ class POItem:
             'PO Delivery Date':['PO Delivery Date'],
             'PO Date': ['PO Date'],
             'Note Raw': ['Note Raw'],
+            'Detail Raw': ['Detail Raw'],
 
             # Item - level params
             '_model':['MODEL','Model / Description'], 

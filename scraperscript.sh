@@ -9,7 +9,7 @@ SCRAPELOGFILE="/home/pi/mail/attachments/log/scrape.log"
 #print any existing unprocessed pdfs - they can't be scraped.
 #rename existing pdfs. No unprocessed pdfs left.
 if ls ++*.[pP][dD][fF] 1> /dev/null 2>&1; then
-	for newpdf in ++*.[pP][dD][fF]; do echo "printing $newpdf" >> $PRINTLOGFILE 2>&1 && lp -d CHH_HP_LASER_2 -o ColorModel=Gray -o print-scaling=fit $newpdf >> $PRINTLOGFILE 2>&1 ; done
+	for newpdf in ++*.[pP][dD][fF]; do echo "printing $newpdf" >> $PRINTLOGFILE 2>&1 && lp -d CHH_HP_LASER_2 -o ColorModel=RGB -o print-scaling=fit $newpdf >> $PRINTLOGFILE 2>&1 ; done
 	for pdf in ++*.[pP][dD][fF]; do mv "$pdf" "${pdf:2}"; done
 fi
 

@@ -29,6 +29,9 @@ deliverydate = None
 note_string = '**Note'
 note = None
 
+detail_string = '^DETAIL.+'
+detail = None
+
 po_items = []
 
 
@@ -74,6 +77,7 @@ def scrape_data(table, startrow, startcol):
         po_item.addEntry(('PO Delivery Date', deliverydate))
         po_item.addEntry(('PO Date', issuedate))
         po_item.addEntry(('Note Raw', note))
+        po_item.addEntry(('Detail Raw', detail))
         for entry in new_row:
             po_item.addEntry(entry)
         items.append(po_item)
@@ -159,6 +163,12 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
             note = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2] + rows[rownumber][colnumber+3]
             note = note + rows[rownumber+1][colnumber+1] + rows[rownumber+1][colnumber+2] + rows[rownumber+1][colnumber+3]
             # print(note)
+
+        #scrape both the detail cell and the next cell to the right, using regex 
+        #in case of weird formatting. Hopefully we don't have to keep doing this - regex is slow.
+        elif re.match(detail_string, item):
+            detail = rows[rownumber][colnumber+1]
+            detail = item + detail 
 
 # --- second pass - to get the actual items ---
 for rownumber, row in enumerate(rows):
