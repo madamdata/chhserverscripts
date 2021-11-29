@@ -61,7 +61,7 @@ class POItem:
         match2 = re.match(r'^(RS|RSM) ([0-9]+)(-1[dD])?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm$', modelstring)
         match4 = re.match(r'^(DKHRC) (500-4) (\(LG 0\))$', modelstring)
-        print(modelstring)
+        # print(modelstring)
         item = size = impeller = silencer_size = fan_direction = None
         if match:
             item, size, impeller = \
@@ -94,7 +94,7 @@ class POItem:
             size = match4.group(2)
             fan_direction = match4.group(3)
 
-        if not (match or match2 or match3):
+        if not (match or match2 or match3 or match4):
             print("Model string doesn't match any known configuration: ", modelstring)
             return None
 
