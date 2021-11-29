@@ -117,7 +117,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
 
                 # --- write the attachment data into a file with the correct name and extension ----
                 os.makedirs(os.path.dirname(filepath), exist_ok=True) #make directory if it doesn't already exist
-                if 'spreadsheet' in content_type or 'pdf' in content_type or 'jpeg' in content_type:
+                if 'spreadsheet' in content_type or 'pdf' in content_type or 'jpeg' in content_type or 'excel' in content_type:
                     with open(filepath, 'wb') as fp:
                         fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
                 else:
