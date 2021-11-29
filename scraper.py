@@ -14,7 +14,7 @@ for row in reader:
 numRows = len(rows)
 numCols = len(rows[0])
 
-dataColumns = ['ITEM', 'MODEL', 'T/BOX', 'Motor', 'Qty/Uts', 'S$ U/P', 'S$ Amt']
+dataBegin = ['ITEM', 'item', 'Item']
 ponumber_string = 'P/O No'
 ponumber = '-'
 project_string = 'PROJECT'
@@ -174,8 +174,8 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
 for rownumber, row in enumerate(rows):
     numItems = 0
     for colnumber, item in enumerate(row):
-        if item == dataColumns[0]:
-            po_items = scrape_data(rows, rownumber, colnumber)#if the thing in the cell is the word 'ITEM'
+        if item in dataBegin:
+            po_items = scrape_data(rows, rownumber, colnumber)#if the thing in the cell is the word 'ITEM' or 'Item'
 
 for poitem in po_items: 
     poitem.convertallparams()
