@@ -55,7 +55,12 @@ def scrape_data(table, startrow, startcol):
     for i in range(startrow+1,numRows-1): #goes down the starting column, calculating number of items
        entry = table[i][startcol]
        if entry == '':
-           break
+           #could be a single blank spot. test for 2 consecutive blank cells
+           if table[i+1][startcol] == '':
+               break
+           else: 
+               num_items +=1
+               new_table.append([])
        else:
            num_items += 1
            new_table.append([]) #add a new empty row to the output table

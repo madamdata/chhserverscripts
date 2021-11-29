@@ -33,6 +33,7 @@ class POItem:
             'Motor Size': ['MOTOR', 'Motor'], 
             'Qty': ['QTY', 'Qty', 'Qty/Uts'], 
             'Price per Unit': ['S$U/P', 'S$ U/P'], 
+            'Motor Frame (Scrapped)': ['Frame', 'FRAME'] 
             }
 
 
