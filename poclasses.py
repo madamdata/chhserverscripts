@@ -28,11 +28,11 @@ class POItem:
             'Detail Raw': ['Detail Raw'],
 
             # Item - level params
-            '_model':['MODEL','Model / Description'], 
-            'T-box Position': ['T/BOX'], 
-            'Motor Size': ['MOTOR'], 
-            'Qty': ['QTY'], 
-            'Price per Unit': ['S$U/P'], 
+            '_model':['MODEL','Model / Description', 'Model'], 
+            'T-box Position': ['T/BOX', 'T/Box'], 
+            'Motor Size': ['MOTOR', 'Motor'], 
+            'Qty': ['QTY', 'Qty', 'Qty/Uts'], 
+            'Price per Unit': ['S$U/P', 'S$ U/P'], 
             }
 
 
@@ -149,7 +149,9 @@ class POItem:
                     ppu = None
                     pass
                 else:
-                    print("Price per unit doesn't seem to be a number.")
+                    print("ValueError: Price per unit doesn't seem to be a number:", ppu)
+            except TypeError:
+                print("TypeError: Price per unit doesn't seem to be a number:", ppu)
 
             output_data['Price per Unit'] = ppu
             
