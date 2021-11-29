@@ -57,8 +57,8 @@ class POItem:
 
     def parse_model_string(self, modelstring):
         fields = {}
-        match = re.match(r'^(BIF|RSM|AND)(-Ex|-GVD)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
-        match2 = re.match(r'^RS ([0-9]+)(-1D)?', modelstring)
+        match = re.match(r'^(BIF|AND)(-Ex|-GVD)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
+        match2 = re.match(r'^(RS|RSM) ([0-9]+)(-1[dD])?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm$', modelstring)
         print(modelstring)
         item = size = impeller = silencer_size = None
@@ -73,9 +73,12 @@ class POItem:
                 item = 'Bif'
 
         elif match2:
-            item = 'RS'
-            size = match2.group(1) + '0'
-            silencer_size = match2.group(2)
+            item = match2.group(1)
+            size = match2.group(2) + '0'
+            try:
+                silencer_size = match2.group(3)
+            except IndexError:
+                pass
 
         elif match3:
             gr1 = match3.group(1)
