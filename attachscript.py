@@ -72,8 +72,8 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
             except TypeError:
                 pass
                 # print("po email not found in 'To' field")
-        pathString = '/'.join(toComponents) + '/' #turn it into a path by putting / between items
-        pathStringForFilename = '_'.join(toComponents) #with _ instead of / for filename
+        pathString = '/'.join(toComponents).lower() + '/' #turn it into a path by putting / between items and force lowercase
+        pathStringForFilename = '_'.join(toComponents).lower() #with _ instead of / for filename
         currentDatestring = datetime.datetime.now().strftime("%d%m%Y_%H:%M")
         sentDatestring = dateparser.parse(msg['Date']).strftime("%m%d_%Y")
 

@@ -5,4 +5,4 @@ offlineimap -o
 rclone sync $HOME/mail/attachments iningDropbox:attachments >> $HOME/mail/attachments/log/sync.log 2>&1
 
 $HOME/mail/chhserverscripts/scraperscript.sh $HOME/mail/attachments/rosenberg
-$HOME/mail/chhserverscripts/scraperscript.sh $HOME/mail/attachments/_CHH/wo/05-32
+$HOME/mail/chhserverscripts/scraperscript.sh $HOME/mail/attachments/_chh/wo/05-32
