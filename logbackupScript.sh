@@ -6,7 +6,7 @@ BACKUPLOGFILENAME="attachments/log/backup/aslog$DATESTRING.log"
 BACKUPSCRAPELOGFILENAME="attachments/log/backup/scrlog$DATESTRING.log"
 
 cd $WORKINGDIRECTORY && mv attachments/log/attachscript.log $BACKUPLOGFILENAME && touch attachscript.log
-cd $WORKINGDIRECTORY && mv attachments/log/scrape.log $BACKUPLOGFILENAME && touch scrape.log
+cd $WORKINGDIRECTORY && mv attachments/log/scrape.log $BACKUPSCRAPELOGFILENAME && touch scrape.log
 echo "Backing up to $BACKUPLOGFILENAME ..."
 
 
