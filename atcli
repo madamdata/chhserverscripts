@@ -1,0 +1,85 @@
+#!/usr/bin/python3
+import sys, os, pyairtable, re 
+from columnar import columnar
+from dotenv import load_dotenv, dotenv_values
+from pyairtable.formulas import match
+from click import style
+import poclasses
+
+load_dotenv()
+key = os.environ['AIRTABLEKEY']
+baseid = os.environ['AIRTABLEBASEID']
+table = pyairtable.Table(key, baseid, 'Table 1')
+command = ""
+patterns = [
+        ('.*:\ ?\d{4}-\d{2}-\d{2}', lambda text: style(text, bg='blue', fg='black', bold=True)),
+        ('Qty:.+', lambda text: style(text, bg='black', fg='bright_blue', bold=True)),
+        ('PO Number:.+', lambda text: style(text, bg='magenta', fg='black', bold=False)),
+        ('.*', lambda text: style(text, bg='black', fg='white')),
+]
+
+def printhelp():
+    print("No command given. Available commands:")
+    print("    atcli getpo <po number>")
+
+def printitem(item):
+    outputstring = ''
+    fields = item['fields']
+    numCols = 6
+    counter = 0
+    sortedfields = sorted(fields, key=str.lower)
+    row = []
+    rows = []
+    for key in sortedfields:
+        val = fields[key]
+        fieldstring = key + ': ' + str(val).replace('\n', '')
+        if counter == (numCols-1):
+            counter = 0
+            row.append(fieldstring)
+            rows.append(row[:])
+            # print(row)
+            row = [] 
+        else:
+            row.append(fieldstring)
+            # print(row)
+            counter += 1
+        # fieldstring = key + ': ' + str(val)
+        # fieldstring = fieldstring[0:45].replace('\n', '')
+        # outputstring += fieldstring + ' |'
+        # if counter == (numCols-1):
+            # counter = 0
+            # outputstring += '\n\n'
+        # else:
+            # counter += 1
+    
+    output = columnar(
+            rows, headers=None, patterns=patterns, 
+            row_sep=style('-',bg='black',fg='white'), 
+            column_sep=style('|', bg='black', fg='white'),
+            # max_column_width=50,
+            terminal_width=250,
+            # min_column_width=9,
+            )
+    print(output)
+    # print(rows)
+    return output
+
+
+try:
+    command = sys.argv[1] 
+except IndexError:
+    printhelp()
+
+
+if command == "getpo":
+    try:
+        which = sys.argv[2]
+        print(which)
+        formula = "FIND('%s' , {PO Number})" % which
+        output = table.all(formula = formula)
+        for item in output:
+            print('     ----     ')
+            printitem(item)
+    except IndexError: 
+        print("No PO number specified. Please specify a PO number.")
+
