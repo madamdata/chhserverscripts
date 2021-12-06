@@ -20,12 +20,12 @@ patterns = [
 
 def printhelp():
     print("No command given. Available commands:")
-    print("    atcli getpo <po number>")
+    print("    atcli getpo <po number> <width of table>")
 
 def printitem(item):
     outputstring = ''
     fields = item['fields']
-    numCols = 6
+    numCols = 5
     counter = 0
     sortedfields = sorted(fields, key=str.lower)
     row = []
@@ -57,7 +57,7 @@ def printitem(item):
             row_sep=style('-',bg='black',fg='white'), 
             column_sep=style('|', bg='black', fg='white'),
             # max_column_width=50,
-            terminal_width=250,
+            terminal_width=termwidth,
             # min_column_width=9,
             )
     print(output)
@@ -72,6 +72,10 @@ except IndexError:
 
 
 if command == "getpo":
+    try:
+        termwidth = int(sys.argv[3])
+    except IndexError: 
+        termwidth = 240
     try:
         which = sys.argv[2]
         print(which)
