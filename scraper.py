@@ -70,7 +70,7 @@ def scrape_data(table, startrow, startcol):
     for column, header in enumerate(header_row):
         if header != '': # if the header is not empty...
             for i in range(num_items): # go down the column, and for each item - 
-                # append a new entry to the output table, a (header, entry) tuple.
+                # append a new entry to tje output table, a (header, entry) tuple.
                 new_table[i].append((header, table[i+startrow+1][column+startcol])) 
 
     # --- generate list of POItems ---
@@ -174,6 +174,7 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
         elif re.match(detail_string, item):
             detail = rows[rownumber][colnumber+1]
             detail = item + detail 
+            poclasses.parse_detail(detail)
 
 # --- second pass - to get the actual items ---
 for rownumber, row in enumerate(rows):

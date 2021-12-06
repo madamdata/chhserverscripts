@@ -2,12 +2,20 @@ import re
 
 class PO:
 
-    def __init__(self, ponumber):
-        self.ponumber = ponumber
+    def __init__(self):
         self.items = []
+        self.ponumber = '-'
+        self.project = '-'
+        self.issuedate = None
+        self.deliverydate = None
+        self.note = None
+        self.detail = None
 
     def addItem(self, poitem):
         self.items.append(poitem)
+
+    def parseDetailString(self, detailstring):
+        pass
 
     def sync(self, remote_table):
         print("test")
