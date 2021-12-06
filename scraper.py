@@ -21,18 +21,12 @@ project_string = 'PROJECT'
 project = '-'
 
 issuedate_string = 'DATE'
-issuedate = None
-
 deliverydate_string = 'Delivery'
-deliverydate = None
-
 note_string = '**Note'
-note = None
-
 detail_string = '^DETAIL.+'
-detail = None
 
 po_items = []
+po = poclasses.PO()
 
 
 # --- load environment and airtable API ---
@@ -40,6 +34,8 @@ load_dotenv()
 key = os.environ['AIRTABLEKEY']
 baseid = os.environ['AIRTABLEBASEID']
 remote_table = pyairtable.Table(key, baseid, 'Table 1')
+
+# --- scraping function ---
 
 def scrape_data(table, startrow, startcol):
     """ takes a table, start row and start column,
@@ -70,39 +66,37 @@ def scrape_data(table, startrow, startcol):
     for column, header in enumerate(header_row):
         if header != '': # if the header is not empty...
             for i in range(num_items): # go down the column, and for each item - 
-                # append a new entry to tje output table, a (header, entry) tuple.
+                # append a new entry to the output table, a (header, entry) tuple.
                 new_table[i].append((header, table[i+startrow+1][column+startcol])) 
 
     # --- generate list of POItems ---
     for new_row in new_table:
         po_item = poclasses.POItem()
-        # po_item.input_dict['PO Number'] = ponumber
-        po_item.addEntry(('PO Number', ponumber))
-        po_item.addEntry(('Project Site', project))
-        po_item.addEntry(('PO Delivery Date', deliverydate))
-        po_item.addEntry(('PO Date', issuedate))
-        po_item.addEntry(('Note Raw', note))
-        po_item.addEntry(('Detail Raw', detail))
         for entry in new_row:
             po_item.addEntry(entry)
         items.append(po_item)
+        po.addItem(po_item)
 
     return items
 
-       
+
 # --- first pass - to get all the document-level params --- 
-for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'model' headings etc
+for rownumber, row in enumerate(rows): 
     for colnumber, item in enumerate(row): 
         if item == ponumber_string:
             ponumber = rows[rownumber][colnumber+1]
             ponumber = ponumber + rows[rownumber][colnumber+2]
             ponumber = ponumber.replace(' ', '').replace(':','')
+            po.setglobal('PO Number', ponumber)
         elif item == project_string:
             project = rows[rownumber][colnumber+1]
             project = project + rows[rownumber][colnumber+2]
+            po.setglobal('Project Site', project)
         elif item == deliverydate_string:
             rawdate = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2]
             rawdate = rawdate.replace(':', '')
+            datestring = ''
+            dateobj = None
             try:
                 datestring = re.match(r'.*?([0-9\/-]+)', rawdate).group(1)
             except AttributeError: #if no match, group(1) above returns this error
@@ -125,23 +119,15 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
 
             try: 
                 deliverydate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
+                po.setglobal('PO Delivery Date', deliverydate)
             except AttributeError: #dateobj is None
                 print("Delivery date object invalid: ", dateobj, rawdate)
-            # try:
-                # datestring = re.match(r'.*?([0-9\/-]+)', rawdate).group(1)
-                # dateobj = datetime.datetime.strptime(datestring, '%Y-%m-%d')
-                # deliverydate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
-            # except AttributeError: #if no match, .group(1) of None returns this error.
-                # print("Delivery date does not match known formats. No regex match: ", rawdate)
-                # if rawdate == "ASAP": 
-                    # deliverydate = datetime.datetime.now().strftime('%Y-%m-%d')  
-            # except ValueError:
-                # print("Delivery date looks like a date but can't be parsed: ", rawdate)
 
         elif item == issuedate_string:
             rawdate = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2]
             rawdate = rawdate.replace(':', '')
             dateobj = None
+            datestring = None
 
             try:
                 datestring = re.match(r'.*?([0-9\/-]+)', rawdate).group(1)
@@ -160,6 +146,7 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
 
             try: 
                 issuedate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
+                po.setglobal('PO Date', issuedate)
             except AttributeError: #dateobj is None
                 print("Issue date object invalid: ", dateobj, rawdate)
 
@@ -167,6 +154,7 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
         elif item == note_string:
             note = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2] + rows[rownumber][colnumber+3]
             note = note + rows[rownumber+1][colnumber+1] + rows[rownumber+1][colnumber+2] + rows[rownumber+1][colnumber+3]
+            po.setglobal('Note Raw', note)
             # print(note)
 
         #scrape both the detail cell and the next cell to the right, using regex 
@@ -174,7 +162,8 @@ for rownumber, row in enumerate(rows): #just to find the row with the 'item', 'm
         elif re.match(detail_string, item):
             detail = rows[rownumber][colnumber+1]
             detail = item + detail 
-            poclasses.parse_detail(detail)
+            po.setglobal('Detail Raw', detail)
+            # poclasses.parse_detail(detail)
 
 # --- second pass - to get the actual items ---
 for rownumber, row in enumerate(rows):
@@ -183,13 +172,8 @@ for rownumber, row in enumerate(rows):
         if item in dataBegin:
             po_items = scrape_data(rows, rownumber, colnumber)#if the thing in the cell is the word 'ITEM' or 'Item'
 
-for poitem in po_items: 
-    poitem.convertallparams()
-    output_dict = poitem.output_dict
-    output_dict_printstring = ""
-    for k, v in output_dict.items():
-        output_dict_printstring = output_dict_printstring + " " + str(k) + " : " +  str(v) +  "   |   " 
-    print(output_dict_printstring)
-    poitem.update_remote(remote_table)
+po.convertAll()
+po.print_all_output()
+po.update_remote(remote_table)
 
 print("         ----           ")

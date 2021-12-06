@@ -1,24 +1,89 @@
 import re
+'''
+These classes are mainly data structures with some functions for internal processing. 
+The scraping should be left to the scraper script. 
+
+'''
 
 class PO:
 
     def __init__(self):
         self.items = []
-        self.ponumber = '-'
-        self.project = '-'
-        self.issuedate = None
-        self.deliverydate = None
-        self.note = None
-        self.detail = None
+        self.globaldetails = {
+                'PO Number' : '-',
+                'Project Site' : '-',
+                'PO Date' : None,
+                'PO Delivery Date' : None,
+                'Note Raw' : None,
+                'Detail Raw' : None,
+                'Motor Brand': None,
+                'Motor Speed': None,
+                'Motor Voltage': None,
+                'Motor Class': None
+                }
+
+    def setglobal(self, key, val):
+        self.globaldetails[key] = val
+        if key == 'Detail Raw':
+            self.parseDetailString(val)
+        if self.items: 
+            for poitem in self.items:
+                poitem.addEntryDict(self.globaldetails)
+                
 
     def addItem(self, poitem):
         self.items.append(poitem)
 
     def parseDetailString(self, detailstring):
+        splitstring = detailstring.split(',')
+        print(splitstring)
+        for index, item in enumerate(splitstring):
+            match1 = re.search(r'(Teco) Motor', item)
+            if match1:
+                self.globaldetails['Motor Brand'] = match1.group(1) 
+
+            match2 = re.search(r'(\d) Pole', item)
+            if match2:
+                if match2.group(0) == '2 Pole':
+                    self.globaldetails['Motor Speed'] = '2880'
+
+            match3 = re.search(r'(\d+)v', item)
+            if match3:
+                self.globaldetails['Motor Voltage'] = match3.group(1) + 'V'
+            
+            match4 = re.search(r'Class .', item)
+            if match4:
+                motorclass = match4.group(0)
+                try:
+                    nextitem = splitstring[index+1]
+                except IndexError:
+                    nextitem = ''
+                    print('Unknown motor class: ', motorclass)
+
+                classmatch = re.search(r'IP55 \((.) Series\)', nextitem)
+                if classmatch:
+                    motorclass += ' (' + classmatch.group(1) + ')'
+                    self.globaldetails['Motor Class'] = motorclass
+
         pass
+
+    def convertAll(self):
+        if self.items: 
+            for poitem in self.items:
+                poitem.addEntryDict(self.globaldetails)
+        for item in self.items:
+            item.convertallparams()
+    
+    def update_remote(self, remote_table):
+        for item in self.items:
+            item.update_remote(remote_table)
 
     def sync(self, remote_table):
         print("test")
+
+    def print_all_output(self):
+        for item in self.items:
+            item.print_output_dict()
 
 class POItem:
 
@@ -34,6 +99,10 @@ class POItem:
             'PO Date': ['PO Date'],
             'Note Raw': ['Note Raw'],
             'Detail Raw': ['Detail Raw'],
+            'Motor Brand': ['Motor Brand'],
+            'Motor Speed': ['Motor Speed'],
+            'Motor Voltage': ['Motor Voltage'],
+            'Motor Class': ['Motor Class'],
 
             # Item - level params
             '_model':['MODEL','Model / Description', 'Model'], 
@@ -64,9 +133,13 @@ class POItem:
             if entry_header in aliases:
                 self.input_dict[param] = entry_data
 
+    def addEntryDict(self, entriesDict):
+        for k,v in entriesDict.items():
+            self.addEntry((k,v))
+
     def parse_model_string(self, modelstring):
         fields = {}
-        match = re.match(r'^(BIF|AND)(-Ex|-GVD)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
+        match = re.match(r'^(BIF|AND)(-Ex|-GVD|-CR)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
         match2 = re.match(r'^(RS|RSM) ([0-9]+)(-1[dD])?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
@@ -121,7 +194,7 @@ class POItem:
         unless processing is necessary"""
         output_data = {}
         if key == '_model':
-            model_string = self.input_dict['_model']
+            model_string = self.input_dict['_model'].replace('\n', '')
             output_data['Item Raw'] = model_string
             try:
                 for k, v in self.parse_model_string(model_string).items():
@@ -147,6 +220,7 @@ class POItem:
             output_data['Motor Size'] = motor_number
         elif key == 'Qty':
             qty = self.input_dict['Qty']
+            qty = re.match(r'(\d+).*', qty).group(1)
             qty = int(qty)
             output_data['Qty'] = qty
         elif key == 'Price per Unit':
@@ -188,3 +262,9 @@ class POItem:
 
     def update_remote(self, remote_table):
         remote_table.create(self.output_dict)
+
+    def print_output_dict(self):
+        output_dict_printstring = ''
+        for k, v in self.output_dict.items():
+            output_dict_printstring += ' ' + str(k) + ' : ' +  str(v) +  '   |   '
+        print(output_dict_printstring)
