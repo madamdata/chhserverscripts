@@ -46,6 +46,9 @@ class PO:
             if match2:
                 if match2.group(0) == '2 Pole':
                     self.globaldetails['Motor Speed'] = '2880'
+                elif match2.group(0) == '4 Pole':
+                    self.globaldetails['Motor Speed'] = '1440'
+
 
             match3 = re.search(r'(\d+)v', item)
             if match3:
@@ -138,11 +141,13 @@ class POItem:
             self.addEntry((k,v))
 
     def parse_model_string(self, modelstring):
+        modelstring = modelstring.replace('\n', ' ')
         fields = {}
         match = re.match(r'^(BIF|AND)(-Ex|-GVD|-CR)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
-        match2 = re.match(r'^(RS|RSM) ([0-9]+)(-1[dD])?', modelstring)
-        match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm$', modelstring)
+        match2 = re.match(r'^(RS|RSM) ([0-9]+)(-\d[dD].*)?', modelstring)
+        match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
+        match5 = re.match(r'(Guide Vane) \d+.*', modelstring)
         # print(modelstring)
         item = size = impeller = silencer_size = fan_direction = None
         if match:
@@ -175,8 +180,11 @@ class POItem:
             silencer_size = match4.group(3)
             if match4.group(4):
                 fan_direction = match4.group(4)
+        
+        elif match5:
+            item = match5.group(1)
 
-        if not (match or match2 or match3 or match4):
+        if not (match or match2 or match3 or match4 or match5):
             print("Model string doesn't match any known configuration: ", modelstring)
             return None
 

@@ -96,17 +96,19 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                     filename = rawfilename
                     
                 # ---- create a filename by adding the name of the box and the date ----
+                filename = filename.replace(" ", "").replace("\n", "") #strip whitespace and line breaks
                 filename, ext = os.path.splitext(filename)
                 filenameprocessed = pathStringForFilename + "__" + filename + "__" + sentDatestring + ext #just for checking duplicates
                 filename = "++" + filenameprocessed
  
-                filename = filename.replace(" ", "").replace("\n", "") #strip whitespace and line breaks
                 content_type = x.get_content_type()
                 print(currentDatestring + ": attachment found in msg (" + subject +  ") -- " + filename)
                 filepath = attachmentFolderPath + pathString + filename
                 filepathprocessed = attachmentFolderPath + pathString + filenameprocessed #again just for checking duplicates
 
                 # ---- check for duplicates and incremenk file name if needed, using next_path function defined above ----
+                print("pathExists:", os.path.exists(filepath), "pathProcessedExists:", os.path.exists(filepathprocessed))
+
                 if os.path.exists(filepath) or os.path.exists(filepathprocessed):                
                     print(filename + " : File with that name exists already! Incrementing file name.")
                     path, ext = os.path.splitext(filepath)
