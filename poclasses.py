@@ -38,7 +38,7 @@ class PO:
         splitstring = detailstring.split(',')
         print(splitstring)
         for index, item in enumerate(splitstring):
-            match1 = re.search(r'(Teco) Motor', item)
+            match1 = re.search(r'(Teco|RAEL) Motor', item)
             if match1:
                 self.globaldetails['Motor Brand'] = match1.group(1) 
 
@@ -143,7 +143,7 @@ class POItem:
     def parse_model_string(self, modelstring):
         modelstring = modelstring.replace('\n', ' ')
         fields = {}
-        match = re.match(r'^(BIF|AND)(-Ex|-GVD|-CR)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
+        match = re.match(r'^(BIF|AND)(-Ex|-GVD|-CR|-T)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
         match2 = re.match(r'^(RS|RSM) ([0-9]+)(-\d[dD].*)?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
@@ -158,7 +158,10 @@ class POItem:
             if item == 'AND':
                 item = 'Ax'
             elif item == 'BIF':
-                item = 'Bif'
+                if extra == '-T':
+                    item = 'Bif T/p'
+                else:
+                    item = 'Bif'
 
         elif match2:
             item = match2.group(1)

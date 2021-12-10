@@ -154,6 +154,7 @@ for rownumber, row in enumerate(rows):
         elif item == note_string:
             note = rows[rownumber][colnumber+1] + rows[rownumber][colnumber+2] + rows[rownumber][colnumber+3]
             note = note + rows[rownumber+1][colnumber+1] + rows[rownumber+1][colnumber+2] + rows[rownumber+1][colnumber+3]
+            note = note.replace('\n', ' ')
             po.setglobal('Note Raw', note)
             # print(note)
 
