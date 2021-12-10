@@ -147,7 +147,7 @@ class POItem:
         match2 = re.match(r'^(RS|RSM) ([0-9]+)(-\d[dD].*)?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
-        match5 = re.match(r'^(Guide Vane) \d+ \(([0-9.]+)mm.*\).*?(\d+)mmL', modelstring)
+        match5 = re.match(r'^(Guide Vane) (\d+).*?(\d+ Blades), ?(\d+)mmL', modelstring)
         # print(modelstring)
         item = size = impeller = silencer_size = fan_direction = casing_length = None
         if match:
@@ -184,7 +184,8 @@ class POItem:
         elif match5:
             item = match5.group(1)
             size = match5.group(2)
-            casing_length = match5.group(3)
+            impeller = match5.group(3)
+            casing_length = match5.group(4)
 
         if not (match or match2 or match3 or match4 or match5):
             print("Model string doesn't match any known configuration: ", modelstring)
