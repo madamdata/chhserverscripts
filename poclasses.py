@@ -22,10 +22,10 @@ class PO:
                 'Motor Class': None
                 }
 
-    def setglobal(self, key, val):
+    def setglobal(self, key, val): #called in scraper.py for each PO-wide field
         self.globaldetails[key] = val
         if key == 'Detail Raw':
-            self.parseDetailString(val)
+            self.parseDetailString(val) #parse detail string for additional global fields
         if self.items: 
             for poitem in self.items:
                 poitem.addEntryDict(self.globaldetails)
@@ -36,9 +36,10 @@ class PO:
 
     def parseDetailString(self, detailstring):
         splitstring = detailstring.split(',')
-        print(splitstring)
+        ex_proof = False
+        # print(splitstring)
         for index, item in enumerate(splitstring):
-            match1 = re.search(r'(Teco|RAEL) Motor', item)
+            match1 = re.search(r'(Teco|RAEL|Att) Motor', item)
             if match1:
                 self.globaldetails['Motor Brand'] = match1.group(1) 
 
@@ -48,6 +49,8 @@ class PO:
                     self.globaldetails['Motor Speed'] = '2880'
                 elif match2.group(0) == '4 Pole':
                     self.globaldetails['Motor Speed'] = '1440'
+                elif match2.group(0) == '2/4 Pole':
+                    self.globaldetails['Motor Speed'] = '2880/1440'
 
 
             match3 = re.search(r'(\d+)v', item)
@@ -58,21 +61,25 @@ class PO:
             if match4:
                 motorclass = match4.group(0)
                 try:
-                    nextitem = splitstring[index+1]
+                    nextitem = splitstring[index+1] #search the next segment after the comma
                 except IndexError:
                     nextitem = ''
-                    print('Unknown motor class: ', motorclass)
 
                 classmatch = re.search(r'IP55 \((.) Series\)', nextitem)
                 if classmatch:
                     motorclass += ' (' + classmatch.group(1) + ')'
-                    self.globaldetails['Motor Class'] = motorclass
+                
+                self.globaldetails['Motor Class'] = motorclass
 
-        pass
+            match5 = re.search(r'Axial(.*)', item)
+            if match5:
+                if match5.group(1) == '-EX':
+                    ex_proof = True
+
 
     def convertAll(self):
         if self.items: 
-            for poitem in self.items:
+            for poitem in self.items: #append all global parameters to each child POItem()
                 poitem.addEntryDict(self.globaldetails)
         for item in self.items:
             item.convertallparams()
@@ -80,9 +87,6 @@ class PO:
     def update_remote(self, remote_table):
         for item in self.items:
             item.update_remote(remote_table)
-
-    def sync(self, remote_table):
-        print("test")
 
     def print_all_output(self):
         for item in self.items:
@@ -140,7 +144,7 @@ class POItem:
         for k,v in entriesDict.items():
             self.addEntry((k,v))
 
-    def parse_model_string(self, modelstring):
+    def parse_model_string(self, modelstring): #called by convert()
         modelstring = modelstring.replace('\n', ' ')
         fields = {}
         match = re.match(r'^(BIF|AND)(-Ex|-GVD|-CR|-T)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
@@ -204,7 +208,7 @@ class POItem:
             
 
     def convert(self, key):
-        """returns a dictionary with the output (airtable-correct) key, and
+        """Called by convertallparams(). returns a dictionary with the output (airtable-correct) key, and
         the output data. Output data is simply the value in the key:value pair,
         unless processing is necessary"""
         output_data = {}
@@ -253,7 +257,7 @@ class POItem:
 
             output_data['Price per Unit'] = ppu
             
-        else:
+        else: #if the input key is not one of the above, just pass the key and its associated data straight to the output
             output_data[key] = self.input_dict[key]
 
         return output_data
