@@ -20,6 +20,7 @@ class PO:
                 'Motor Speed': None,
                 'Motor Voltage': None,
                 'Motor Class': None
+                'Filename': None
                 }
 
     def setglobal(self, key, val): #called in scraper.py for each PO-wide field
@@ -101,6 +102,7 @@ class POItem:
     input_params_list = {
             # PO - level params
             'PO Number':['ponumber', 'PO Number'],
+            'Filename':['Filename'],
             'Project Site':['Project Site'],
             'PO Delivery Date':['PO Delivery Date'],
             'PO Date': ['PO Date'],

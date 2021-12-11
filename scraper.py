@@ -5,6 +5,7 @@ import poclasses
 #--- open file and set up some variables ---
 datestring = datetime.datetime.now().strftime("%d%b%Y-%H:%M")
 filepath = sys.argv[1]
+filename = os.path.basename(filepath)
 print(datestring + " :scraping " + filepath + " ...")
 csvfile = open(filepath, newline='')
 reader = csv.reader(csvfile, dialect='excel')
@@ -81,6 +82,8 @@ def scrape_data(table, startrow, startcol):
 
 
 # --- first pass - to get all the document-level params --- 
+po.setglobal('Filename', filename) #add filename to airtable fields, for duplicate checking
+
 for rownumber, row in enumerate(rows): 
     for colnumber, item in enumerate(row): 
         if item == ponumber_string:
