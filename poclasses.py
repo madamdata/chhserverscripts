@@ -19,7 +19,7 @@ class PO:
                 'Motor Brand': None,
                 'Motor Speed': None,
                 'Motor Voltage': None,
-                'Motor Class': None
+                'Motor Class': None,
                 'Filename': None
                 }
 

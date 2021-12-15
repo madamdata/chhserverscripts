@@ -58,6 +58,8 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
         ccs = msg.get_all('Cc', [])
         bccs = msg.get_all('Bcc', [])
         subject = msg['Subject']
+        if subject == None: 
+            subject = '[no subject]'
         tos = tos + ccs + bccs
         # print(tos)
         to = toComponents = ''
