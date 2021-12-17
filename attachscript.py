@@ -99,8 +99,8 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                     
                 # ---- create a filename by adding the name of the box and the date ----
                 filename = filename.replace(" ", "").replace("\n", "") #strip whitespace and line breaks
-                filename, ext = os.path.splitext(filename)
-                filenameprocessed = pathStringForFilename + "__" + filename + "__" + sentDatestring + ext #just for checking duplicates
+                filename, file_ext = os.path.splitext(filename)
+                filenameprocessed = pathStringForFilename + "__" + filename + "__" + sentDatestring + file_ext #just for checking duplicates
                 filename = "++" + filenameprocessed
  
                 content_type = x.get_content_type()
@@ -109,7 +109,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 filepathprocessed = attachmentFolderPath + pathString + filenameprocessed #again just for checking duplicates
 
                 # ---- check for duplicates and incremenk file name if needed, using next_path function defined above ----
-                print("pathExists:", os.path.exists(filepath), "pathProcessedExists:", os.path.exists(filepathprocessed))
+                # print("pathExists:", os.path.exists(filepath), "pathProcessedExists:", os.path.exists(filepathprocessed))
 
                 if os.path.exists(filepath) or os.path.exists(filepathprocessed):                
                     print(filename + " : File with that name exists already! Incrementing file name.")
@@ -121,7 +121,8 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
 
                 # --- write the attachment data into a file with the correct name and extension ----
                 os.makedirs(os.path.dirname(filepath), exist_ok=True) #make directory if it doesn't already exist
-                if 'spreadsheet' in content_type or 'pdf' in content_type or 'jpeg' in content_type or 'excel' in content_type:
+                # print(file_ext.lower())
+                if file_ext.lower()=='.pdf' or 'spreadsheet' in content_type or 'pdf' in content_type or 'jpeg' in content_type or 'excel' in content_type:
                     with open(filepath, 'wb') as fp:
                         fp.write(x.get_payload(decode=True)) #unpack the payload into an actual file
                 else:
