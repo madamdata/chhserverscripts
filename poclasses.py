@@ -111,7 +111,9 @@ class POItem:
             'Motor Brand': ['Motor Brand'],
             'Motor Speed': ['Motor Speed'],
             'Motor Voltage': ['Motor Voltage'],
-            'Motor Class': ['Motor Class'],
+            
+            # either?
+            'Motor Class': ['Motor Class', 'Class', 'CLASS'],
 
             # Item - level params
             '_model':['MODEL','Model / Description', 'Model'], 
@@ -149,18 +151,21 @@ class POItem:
     def parse_model_string(self, modelstring): #called by convert()
         modelstring = modelstring.replace('\n', ' ')
         fields = {}
-        match = re.match(r'^(BIF|AND)(-Ex|-GVD|-CR|-T)? (([0-9]+)\/([0-9-]+\/.+)|(.+))$', modelstring)
+        match = re.match(r'^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? (([0-9]+)\/([0-9-]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$', modelstring)
         match2 = re.match(r'^(RS|RSM) ([0-9]+)(-[\d.]+[dD].*)?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
         match5 = re.match(r'^(Guide Vane) (\d+).*?(\d+ Blades), ?(\d+)mmL', modelstring)
         # print(modelstring)
-        item = size = impeller = silencer_size = fan_direction = casing_length = None
+        item = size = impeller = silencer_size = fan_direction = casing_length = motor_size = None
         if match:
             item, size, impeller = \
                     match.group(1), match.group(4), match.group(5)
             
             extra = match.group(2)
+            if match.group(7):
+                casing_length = match.group(7)
+
             if item == 'AND':
                 item = 'Ax'
             elif item == 'BIF':
@@ -168,6 +173,10 @@ class POItem:
                     item = 'Bif T/p'
                 else:
                     item = 'Bif'
+            elif item == 'RV':
+                item = 'RV - Ax'
+            elif item == 'DQ':
+                item = 'DQ - Ax'
 
         elif match2:
             item = match2.group(1)
@@ -179,8 +188,10 @@ class POItem:
             gr1 = match3.group(1)
             if gr1 == "Matching Flanges":
                 item = 'MFlanges'
+                motor_size = '-'
             elif gr1 == "Mounting Feet":
                 item = 'MFeet'
+                motor_size = '-'
             size = match3.group(2)
 
         elif match4:
@@ -202,6 +213,7 @@ class POItem:
 
         fields['Item'] = item
         fields['Size'] = size
+        fields['Motor Size'] = motor_size
         fields['Impeller'] = impeller
         fields['Silencer Size'] = silencer_size
         fields['Fan Direction'] = fan_direction
@@ -239,6 +251,10 @@ class POItem:
             elif motor_number == '3':
                 motor_number = '3.0'
             output_data['Motor Size'] = motor_number
+        elif key == 'Motor Class':
+            motor_class = self.input_dict['Motor Class']
+            motor_class = 'Class' + motor_class.upper()
+            output_data['Motor Class'] = motor_class
         elif key == 'Qty':
             qty = self.input_dict['Qty']
             qty = re.match(r'(\d+).*', qty).group(1)

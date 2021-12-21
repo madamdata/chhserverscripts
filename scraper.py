@@ -166,6 +166,7 @@ for rownumber, row in enumerate(rows):
         elif re.match(detail_string, item):
             detail = rows[rownumber][colnumber+1]
             detail = item + detail 
+            detail = detail.replace('\n', ' ')
             po.setglobal('Detail Raw', detail)
             # poclasses.parse_detail(detail)
 

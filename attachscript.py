@@ -100,7 +100,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 # ---- create a filename by adding the name of the box and the date ----
                 filename = filename.replace(" ", "").replace("\n", "") #strip whitespace and line breaks
                 filename, file_ext = os.path.splitext(filename)
-                filenameprocessed = pathStringForFilename + "__" + filename + "__" + sentDatestring + file_ext #just for checking duplicates
+                filenameprocessed = pathStringForFilename + "__" + filename + file_ext #just for checking duplicates
                 filename = "++" + filenameprocessed
  
                 content_type = x.get_content_type()
