@@ -151,7 +151,7 @@ class POItem:
     def parse_model_string(self, modelstring): #called by convert()
         modelstring = modelstring.replace('\n', ' ')
         fields = {}
-        match = re.match(r'^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? (([0-9]+)\/([0-9-]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$', modelstring)
+        match = re.match(r'^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$', modelstring)
         match2 = re.match(r'^(RS|RSM) ([0-9]+)(-[\d.]+[dD].*)?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
