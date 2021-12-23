@@ -104,7 +104,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 filename = "++" + filenameprocessed
  
                 content_type = x.get_content_type()
-                print(currentDatestring + ": attachment found in msg (" + subject +  ") -- " + filename)
+                print(currentDatestring + ": attachment found in msg (" + subject[:12] +  ") -- " + filename)
                 filepath = attachmentFolderPath + pathString + filename
                 filepathprocessed = attachmentFolderPath + pathString + filenameprocessed #again just for checking duplicates
 
