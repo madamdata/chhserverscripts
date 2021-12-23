@@ -35,11 +35,10 @@ class PO:
     def addItem(self, poitem):
         self.items.append(poitem)
 
-    def parseDetailString(self, detailstring):
-        splitstring = detailstring.split(',')
+    def parseDetailString(self, detailstring): # called once per PO 
+        splitstring = detailstring.split(',') #split into parts based on commas
         ex_proof = False
-        # print(splitstring)
-        for index, item in enumerate(splitstring):
+        for index, item in enumerate(splitstring): #search every part for various regex matches. 
             match1 = re.search(r'(Teco|RAEL|Att) Motor', item)
             if match1:
                 self.globaldetails['Motor Brand'] = match1.group(1) 
@@ -78,7 +77,11 @@ class PO:
                     ex_proof = True
 
 
-    def convertAll(self):
+    def convertAll(self): 
+        """ 
+        called once at end of scraper.py. Updates all child POItems with global details, then calls
+        convertallparams() on each child POItem.
+        """
         if self.items: 
             for poitem in self.items: #append all global parameters to each child POItem()
                 poitem.addEntryDict(self.globaldetails)
@@ -86,10 +89,12 @@ class PO:
             item.convertallparams()
     
     def update_remote(self, remote_table):
+        """call update_remote on all child POItems""" 
         for item in self.items:
             item.update_remote(remote_table)
 
     def print_all_output(self):
+        """ for dumping to log. calls print_output_dict on all child POItems """ 
         for item in self.items:
             item.print_output_dict()
 
@@ -127,8 +132,11 @@ class POItem:
 
     def __init__(self):
         self.input_dict={}
-        for item in self.__class__.input_params_list.keys():
-            self.input_dict[item] = None
+        #fill input_dict with 'None' - this allows for the correct fall-through behaviour later. 
+        #if nothing is done, item will remain as 'None' and the appropriate errors will be caught, 
+        #or it will be detected at the conversion stage and not converted and not uploaded.
+        for item in self.__class__.input_params_list.keys(): 
+            self.input_dict[item] = None 
             self.output_dict={}
 
     def addEntry(self, entryTuple):
@@ -145,10 +153,15 @@ class POItem:
                 self.input_dict[param] = entry_data
 
     def addEntryDict(self, entriesDict):
+        """ addEntry, but with a dictionary of items rather than a tuple with a single item """ 
         for k,v in entriesDict.items():
             self.addEntry((k,v))
 
     def parse_model_string(self, modelstring): #called by convert()
+        """ 
+        Called by convert(). Reads the model string and matches against a set of regexes.
+        returns a dictionary called 'fields' of appropriate airtable-fields and values
+        """
         modelstring = modelstring.replace('\n', ' ')
         fields = {}
         match = re.match(r'^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$', modelstring)
@@ -156,7 +169,6 @@ class POItem:
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
         match5 = re.match(r'^(Guide Vane) (\d+).*?(\d+ Blades), ?(\d+)mmL', modelstring)
-        # print(modelstring)
         item = size = impeller = silencer_size = fan_direction = casing_length = motor_size = None
         if match:
             item, size, impeller = \
@@ -230,7 +242,7 @@ class POItem:
             model_string = self.input_dict['_model'].replace('\n', '')
             output_data['Item Raw'] = model_string
             try:
-                for k, v in self.parse_model_string(model_string).items():
+                for k, v in self.parse_model_string(model_string).items(): #parse_model_string returns a dict of fields and values
                     output_data[k] = v
             except AttributeError:
                 pass
@@ -299,9 +311,11 @@ class POItem:
         return self.output_dict
 
     def update_remote(self, remote_table):
+        """send contents of output_dict to airtable as a new record""" 
         remote_table.create(self.output_dict)
 
-    def print_output_dict(self):
+    def print_output_dict(self): 
+        """ for dumping to log """ 
         output_dict_printstring = ''
         for k, v in self.output_dict.items():
             output_dict_printstring += ' ' + str(k) + ' : ' +  str(v) +  '   |   '

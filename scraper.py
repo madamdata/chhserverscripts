@@ -105,7 +105,6 @@ for rownumber, row in enumerate(rows):
             except AttributeError: #if no match, group(1) above returns this error
                 if rawdate == "ASAP": 
                     print("Delivery date ASAP: setting to today.")
-                    # deliverydate = datetime.datetime.now().strftime('%Y-%m-%d')  
                     datestring = datetime.datetime.now().strftime('%Y-%m-%d')  
                 else:
                     print("Delivery date does not match known formats: ", rawdate)
@@ -113,12 +112,14 @@ for rownumber, row in enumerate(rows):
             try: 
                 dateobj = datetime.datetime.strptime(datestring, '%Y-%m-%d')
             except ValueError: #string is not in the specified format
-                print("Delivery Date not in %Y-%m-%d format: ", datestring)
+                # print("Delivery Date not in %Y-%m-%d format: ", datestring)
+                pass
 
             try: 
                 dateobj = datetime.datetime.strptime(datestring, '%d/%m/%Y')
             except ValueError: #string is not in the specified format
-                print("Delivery Date not in %d/%m/%Y format: ", datestring)
+                # print("Delivery Date not in %d/%m/%Y format: ", datestring)
+                pass
 
             try: 
                 deliverydate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
@@ -140,12 +141,14 @@ for rownumber, row in enumerate(rows):
             try: 
                 dateobj = datetime.datetime.strptime(datestring, '%Y-%m-%d')
             except ValueError:
-                print("Issue Date not in %Y-%m-%d format: ", datestring)
+                # print("Issue Date not in %Y-%m-%d format: ", datestring)
+                pass
 
             try: 
                 dateobj = datetime.datetime.strptime(datestring, '%d/%m/%Y')
             except ValueError:
-                print("Issue Date not in %d/%m/%Y format: ", datestring)
+                # print("Issue Date not in %d/%m/%Y format: ", datestring)
+                pass
 
             try: 
                 issuedate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
