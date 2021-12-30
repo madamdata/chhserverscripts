@@ -264,10 +264,13 @@ class POItem:
                 motor_number = '3.0'
             output_data['Motor Size'] = motor_number
         elif key == 'Motor Class':
-            motor_class_intable = self.input_dict['Motor Class']
-            if motor_class_intable == None:
-                motor_class_intable = 'Class' + motor_class_intable.upper()
-                output_data['Motor Class'] = motor_class_intable
+            motor_class = self.input_dict['Motor Class']
+            if motor_class != None:
+                if re.match(r'^[a-zA-Z]$', motor_class):  #if it's a single letter, add 'class', else pass it along
+                    motor_class = 'Class' + motor_class_intable.upper()
+                    output_data['Motor Class'] = motor_class_intable
+            output_data['Motor Class'] = motor_class
+
         elif key == 'Qty':
             qty = self.input_dict['Qty']
             qty = re.match(r'(\d+).*', qty).group(1)

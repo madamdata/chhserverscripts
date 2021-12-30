@@ -61,7 +61,6 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
         if subject == None: 
             subject = '[no subject]'
         tos = tos + ccs + bccs
-        # print(tos)
         to = toComponents = ''
         pathString = pathStringForFilename =  ''
         for addr in tos:
@@ -104,7 +103,12 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 filename = "++" + filenameprocessed
  
                 content_type = x.get_content_type()
-                print(currentDatestring + ": attachment found in msg (" + subject[:12] +  ") -- " + filename)
+                #log only if file is not being sent to the printer at _chh+wo etc
+                if not re.match(r'^\+\+_chh.*', filename):
+                    print(currentDatestring + ": attachment found in msg (" + subject[:13] +  "..) -- " + filename)
+                else:
+                    # print("test - skipping log for ++_chh...")
+                    pass
                 filepath = attachmentFolderPath + pathString + filename
                 filepathprocessed = attachmentFolderPath + pathString + filenameprocessed #again just for checking duplicates
 
