@@ -103,8 +103,14 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 filename = "++" + filenameprocessed
  
                 content_type = x.get_content_type()
-                #log only if file is not being sent to the printer at _chh+wo etc
-                if not re.match(r'^\+\+_chh.*', filename):
+                #log only if file is not in the exclude list etc
+                excludeThis = False
+                log_exclude = [r'^\+\+_chh.*', r'^\+\+wolter_do.*']
+                for excludeRegex in log_exclude:
+                    if re.match(excludeRegex, filename):
+                        excludeThis = True #if nothing matches, 'False' value should fall through
+
+                if not excludeThis:
                     print(currentDatestring + ": attachment found in msg (" + subject[:13] +  "..) -- " + filename)
                 else:
                     # print("test - skipping log for ++_chh...")
