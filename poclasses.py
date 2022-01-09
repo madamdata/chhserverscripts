@@ -165,7 +165,7 @@ class POItem:
         modelstring = modelstring.replace('\n', ' ')
         fields = {}
         match = re.match(r'^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$', modelstring)
-        match2 = re.match(r'^(RS|RSM) ([0-9]+)(-[\d.]+[dD].*)?', modelstring)
+        match2 = re.match(r'^(RS|RSM) ([0-9]+)(-[\d.]+[dD])(.*)?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
         match5 = re.match(r'^(Guide Vane) (\d+).*?(\d+ Blades), ?(\d+)mmL', modelstring)
@@ -195,6 +195,9 @@ class POItem:
             size = match2.group(2) + '0'
             if match2.group(3):
                 silencer_size = match2.group(3)
+                if match2.group(4):
+                    if match2.group(4) == ' c/w Melinex':
+                        silencer_size = silencer_size + match2.group(4)
 
         elif match3:
             gr1 = match3.group(1)
