@@ -1,9 +1,9 @@
 #!/bin/bash
 
-DATESTRING=$(date +%d\_%b%Y)
+DATESTRING=$(date +%Y-%m-%d)
 WORKINGDIRECTORY="/home/pi/mail"
-BACKUPLOGFILENAME="attachments/log/backup/aslog$DATESTRING.log"
-BACKUPSCRAPELOGFILENAME="attachments/log/backup/scrlog$DATESTRING.log"
+BACKUPLOGFILENAME="attachments/log/backup/aslog_$DATESTRING.log"
+BACKUPSCRAPELOGFILENAME="attachments/log/backup/scrlog_$DATESTRING.log"
 
 cd $WORKINGDIRECTORY && mv attachments/log/attachscript.log $BACKUPLOGFILENAME && touch attachments/log/attachscript.log
 cd $WORKINGDIRECTORY && mv attachments/log/scrape.log $BACKUPSCRAPELOGFILENAME && touch attachments/log/scrape.log

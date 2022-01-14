@@ -27,17 +27,45 @@ class PO:
         self.globaldetails[key] = val
         if key == 'Detail Raw':
             self.parseDetailString(val) #parse detail string for additional global fields
-        if self.items: 
-            for poitem in self.items:
-                poitem.addEntryDict(self.globaldetails)
+            self.globaldetails[key] = val.replace('\n', '') #add a version without newlines to the global details list
+        elif key == 'Note Raw':
+            self.parseNoteString(val)
+
+        # below should never happen. I would rather it throws an error if it does.
+        # if self.items: 
+            # for poitem in self.items:
+                # poitem.addEntryDict(self.globaldetails)
                 
 
     def addItem(self, poitem):
         self.items.append(poitem)
 
+    def parseNoteString(self, notestring):
+        if re.match(r'.*w\/o grease nipples.*', notestring):
+            self.globaldetails['Grease Nipple Remark / See Sample'] = '不要加打油'
+        search_holding_brackets = re.match(r'.*holdingbrackets\((\d+)"x(\d+)"\).*', notestring.replace(' ', ''))
+        if search_holding_brackets:
+            self.globaldetails['F/B (scraped)'] = 'F/B ' + search_holding_brackets.group(1) + 'in x ' \
+                    + search_holding_brackets.group(2) + 'in'
+
     def parseDetailString(self, detailstring): # called once per PO 
         splitstring = detailstring.split(',') #split into parts based on commas
+        
+        # check for multiple detail sections (e.g. (A) - foo (B) - bar)
+        # we don't parse those (it's far too much work and too buggy - if they really want that kinda thing, PUT IT IN THE TABLE)
+        # but we will post a warning on the airtable that the details need to be manually scraped. 
+        ds_lower = detailstring.lower()
+        ds_lower_stripnewline = ds_lower.replace('\n', '') #newlines interfere with regex. strip unless looking specifically for newlines
         ex_proof = False
+        if re.match(r'.*pole.*pole.*', ds_lower_stripnewline):
+                self.globaldetails['Detail (Multi Pole)'] = 'True'
+        if re.match(r'.*series.*series.*', ds_lower_stripnewline):
+                self.globaldetails['Detail (Multi Class)'] = 'True'
+        if re.match(r'.*series.*series.*', ds_lower_stripnewline):
+                self.globaldetails['Detail (Multi Voltage)'] = 'True'
+        if re.match(r'^.+\n.+$', ds_lower):
+                self.globaldetails['Detail (Multi Line)'] = 'True'
+
         for index, item in enumerate(splitstring): #search every part for various regex matches. 
             match1 = re.search(r'(Teco|RAEL|Att) Motor', item)
             if match1:
@@ -104,6 +132,7 @@ class POItem:
     # parameter like 'model' that needs to be parsed into the correct output fields. 
     # by default, placeholder parameters start with '_'
     # values -> list of potential things the client might call them, ie aliases
+    # this is checked by addEntry() to input the correct header names into the input_dict
     input_params_list = {
             # PO - level params
             'PO Number':['ponumber', 'PO Number'],
@@ -113,12 +142,20 @@ class POItem:
             'PO Date': ['PO Date'],
             'Note Raw': ['Note Raw'],
             'Detail Raw': ['Detail Raw'],
-            'Motor Brand': ['Motor Brand'],
-            'Motor Speed': ['Motor Speed'],
             'Motor Voltage': ['Motor Voltage'],
+            'Grease Nipple Remark / See Sample': ['Grease Nipple Remark / See Sample'],
+            'F/B (scraped)': ['F/B (scraped)'],
+            'Detail (Multi Pole)': ['Detail (Multi Pole)'],
+            'Detail (Multi Class)': ['Detail (Multi Class)'],
+            'Detail (Multi Voltage)': ['Detail (Multi Voltage)'],
+            'Detail (Multi Line)': ['Detail (Multi Line)'],
+            'Galvanised/Fabrication Date (Requested)': ['Galvanised/Fabrication Date (Requested)'],
+            'Reason for Urgency': ['Reason for Urgency'],
             
             # either?
             'Motor Class': ['Motor Class', 'Class', 'CLASS'],
+            'Motor Speed': ['Motor Speed'],
+            'Motor Brand': ['Motor Brand'],
 
             # Item - level params
             '_model':['MODEL','Model / Description', 'Model'], 
@@ -126,7 +163,8 @@ class POItem:
             'Motor Size': ['MOTOR', 'Motor'], 
             'Qty': ['QTY', 'Qty', 'Qty/Uts'], 
             'Price per Unit': ['S$U/P', 'S$ U/P'], 
-            'Motor Frame (Scrapped)': ['Frame', 'FRAME'] 
+            'Motor Frame (Scrapped)': ['Frame', 'FRAME'],
+            'Item No.': ['ITEM', 'Item']
             }
 
 
@@ -169,7 +207,8 @@ class POItem:
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
         match5 = re.match(r'^(Guide Vane) (\d+).*?(\d+ Blades), ?(\d+)mmL', modelstring)
-        item = size = impeller = silencer_size = fan_direction = casing_length = motor_size = None
+        item = size = impeller = silencer_size = fan_direction = casing_length = None
+        motor_size = motor_class = motor_brand = motor_speed = None
         if match:
             item, size, impeller = \
                     match.group(1), match.group(4), match.group(5)
@@ -193,6 +232,10 @@ class POItem:
         elif match2:
             item = match2.group(1)
             size = match2.group(2) + '0'
+            motor_size = '-'
+            motor_class = '-'
+            motor_brand = '-'
+            motor_speed = '-'
             if match2.group(3):
                 silencer_size = match2.group(3)
                 if match2.group(4):
@@ -229,6 +272,12 @@ class POItem:
         fields['Item'] = item
         fields['Size'] = size
         fields['Motor Size'] = motor_size
+        if motor_class != None: #only set this if there's something to be set, otherwise it will override a potential global motor class with None
+            fields['Motor Class'] = motor_class
+        if motor_brand != None: #only set this if there's something to be set, otherwise it will override a potential global motor class with None
+            fields['Motor Brand'] = motor_brand
+        if motor_speed != None: #only set this if there's something to be set, otherwise it will override a potential global motor class with None
+            fields['Motor Speed'] = motor_speed
         fields['Impeller'] = impeller
         fields['Silencer Size'] = silencer_size
         fields['Fan Direction'] = fan_direction
@@ -270,8 +319,8 @@ class POItem:
             motor_class = self.input_dict['Motor Class']
             if motor_class != None:
                 if re.match(r'^[a-zA-Z]$', motor_class):  #if it's a single letter, add 'class', else pass it along
-                    motor_class = 'Class' + motor_class_intable.upper()
-                    output_data['Motor Class'] = motor_class_intable
+                    motor_class = 'Class' + motor_class.upper()
+                    # output_data['Motor Class'] = motor_class
             output_data['Motor Class'] = motor_class
 
         elif key == 'Qty':

@@ -26,6 +26,8 @@ deliverydate_string = 'Delivery'
 note_string = '**Note'
 detail_string = '^DETAIL.+'
 
+urgent_galvanised_string = 'Galvanised'
+urgent_reason_string = 'Reason'
 po_items = []
 po = poclasses.PO()
 
@@ -149,7 +151,6 @@ for rownumber, row in enumerate(rows):
             except ValueError:
                 # print("Issue Date not in %d/%m/%Y format: ", datestring)
                 pass
-
             try: 
                 issuedate = dateobj.strftime('%Y-%m-%d') #has to be in bizarre US order cos of airtable
                 po.setglobal('PO Date', issuedate)
@@ -164,14 +165,24 @@ for rownumber, row in enumerate(rows):
             po.setglobal('Note Raw', note)
             # print(note)
 
+        elif item == urgent_reason_string:
+            po.setglobal('Reason for Urgency', 'Ms Tan PO')
+
+        elif item == urgent_galvanised_string:
+            galv_date_raw = rows[rownumber][colnumber+1]
+            try: 
+                dateobj = datetime.datetime.strptime(galv_date_raw, '%d/%m/%Y')
+            except ValueError:
+                print("Galvanised date not in %d/%m/%Y format: ", galv_date_raw)
+                pass
+            po.setglobal('Galvanised/Fabrication Date (Requested)', dateobj.strftime('%Y-%m-%d'))
+
         #scrape both the detail cell and the next cell to the right, using regex 
         #in case of weird formatting. Hopefully we don't have to keep doing this - regex is slow.
         elif re.match(detail_string, item):
             detail = rows[rownumber][colnumber+1]
             detail = item + detail 
-            detail = detail.replace('\n', ' ')
             po.setglobal('Detail Raw', detail)
-            # poclasses.parse_detail(detail)
 
 # --- second pass - to get the actual items ---
 for rownumber, row in enumerate(rows):
