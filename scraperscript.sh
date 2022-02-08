@@ -2,14 +2,11 @@
 
 cd $1
 
-PRINTLOGFILE="/home/pi/mail/attachments/log/print.log"
-SCRAPELOGFILE="/home/pi/mail/attachments/log/scrape.log"
+SCRAPELOGFILE="/home/chh/mail/attachments/log/scrape.log"
 
 
-#print any existing unprocessed pdfs - they can't be scraped.
-#rename existing pdfs. No unprocessed pdfs left.
+#rename existing pdfs, since they can't be scraped. No unprocessed pdfs left.
 if ls ++*.[pP][dD][fF] 1> /dev/null 2>&1; then
-	for newpdf in ++*.[pP][dD][fF]; do echo "printing $newpdf" >> $PRINTLOGFILE 2>&1 && lp -d CHH_HP_LASER_2 -o ColorModel=RGB -o print-scaling=fit $newpdf >> $PRINTLOGFILE 2>&1 ; done
 	for pdf in ++*.[pP][dD][fF]; do mv "$pdf" "${pdf:2}"; done
 fi
 
@@ -25,18 +22,10 @@ if ls ++*.[xX][lL][sS][xX] 1> /dev/null 2>&1; then
 	#echo "No new .xlsx files to process."
 fi
 
-#convert xlsx to pdf for printing
-#for xlp in ++*.xlsx; do libreoffice --headless --convert-to pdf $xlp; done
-
-#print pdfs
-#for pdfp in ++*.pdf; do lp -d CHH_HP_LASER_2 -o ColorModel=DeviceGray -o print-scaling=fit $pdfp; done 
-
-#remove all csvs and any pdfs created by this script. (pre existing pdfs have already been renamed
-#and so won't be removed)
+#remove all csvs created by this script
 
 if ls ++*.csv 1> /dev/null 2>&1; then
 	rm ++*.csv
 fi
-#rm ++*.pdf
 
 
