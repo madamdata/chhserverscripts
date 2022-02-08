@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DATESTRING=$(date +%d\_%b\_%H:%M)
-WORKINGDIRECTORY="/home/pi/mail"
+WORKINGDIRECTORY="~/mail"
 BACKUPFILENAME="backup/$DATESTRING.zip"
 
 cd $WORKINGDIRECTORY && zip -r $BACKUPFILENAME attachments

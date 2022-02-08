@@ -1,8 +1,8 @@
 # open crontab with "crontab -e" and copy these lines in
 
-*/3 * * * * /home/pi/mail/chhserverscripts/syncAttach.sh
+*/3 * * * * ~/mail/chhserverscripts/syncAttach.sh
 
-0 20 * * * /home/pi/mail/chhserverscripts/backupScript.sh
+0 20 * * * ~/mail/chhserverscripts/backupScript.sh
 
-0 0 1 * * /home/pi/mail/chhserverscripts/logbackupScript.sh
+0 0 1 * * ~/mail/chhserverscripts/logbackupScript.sh
 

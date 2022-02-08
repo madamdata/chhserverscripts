@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DATESTRING=$(date +%d\_%b\_%Y)
-WORKINGDIRECTORY="/home/pi/mail"
+WORKINGDIRECTORY="/home/chh/mail"
 ALOGFILENAME="attachments/log/attachscript.log"
 SLOGFILENAME="attachments/log/scrape.log"
 

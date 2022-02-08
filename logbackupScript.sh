@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DATESTRING=$(date +%Y-%m-%d)
-WORKINGDIRECTORY="/home/pi/mail"
+WORKINGDIRECTORY="~/mail"
 BACKUPLOGFILENAME="attachments/log/backup/aslog_$DATESTRING.log"
 BACKUPSCRAPELOGFILENAME="attachments/log/backup/scrlog_$DATESTRING.log"
 

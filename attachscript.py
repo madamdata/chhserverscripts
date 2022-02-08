@@ -2,12 +2,12 @@ import mailbox, os, datetime, dateparser, re
 from email.header import decode_header
 
 # ---- path and variable definitions ----
-os.chdir('/home/pi/mail/pochhmail') #main mainbox directory. Everything in this script is relative to this path
+os.chdir('/home/chh/mail/pochhmail') #main mainbox directory. Everything in this script is relative to this path
 logfilePath = '../attachments/log/attachscript.log'
 synclogPath = '../attachments/log/sync.log'
 attachmentFolderPath = '../attachments/'
 downloadFolderPath = 'downloaded/'
-inboxFolderPath = 'INBOX/'
+inboxFolderPath = 'inbox/'
 
 inbox = mailbox.Maildir(inboxFolderPath, factory=None, create=False)
 downloaded = mailbox.Maildir("downloaded", factory=None, create=False) #place to put the downloaded messages
@@ -122,7 +122,8 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 # print("pathExists:", os.path.exists(filepath), "pathProcessedExists:", os.path.exists(filepathprocessed))
 
                 if os.path.exists(filepath) or os.path.exists(filepathprocessed):                
-                    print(filename + " : File with that name exists already! Incrementing file name.")
+                    if not excludeThis:
+                        print(filename + " : File with that name exists already! Incrementing file name.")
                     path, ext = os.path.splitext(filepath)
                     path = path + "(%s)"
                     path_processed, ext2 = os.path.splitext(filepathprocessed)
