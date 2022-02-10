@@ -106,6 +106,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 #log only if file is not in the exclude list etc
                 excludeThis = False
                 log_exclude = [r'^\+\+_chh.*', r'^\+\+wolter_do.*']
+                #log_exclude = [r'^\+\+wolter_do.*']
                 for excludeRegex in log_exclude:
                     if re.match(excludeRegex, filename):
                         excludeThis = True #if nothing matches, 'False' value should fall through

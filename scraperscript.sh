@@ -15,7 +15,7 @@ fi
 # and SCRAPE
 
 if ls ++*.[xX][lL][sS][xX] 1> /dev/null 2>&1; then
-	for xl in ++*.[xX][lL][sS][xX]; do in2csv -n "$xl" | xargs -I % bash -c "in2csv '$xl' --sheet % > '$xl'%.csv 2> /dev/null"; done
+	for xl in ++*.[xX][lL][sS][xX]; do /usr/local/bin/in2csv -n "$xl" | xargs -I % bash -c "/usr/local/bin/in2csv '$xl' --sheet % > '$xl'%.csv 2> /dev/null"; done
 	for filename in ++*.[xX][lL][sS][xX];do mv $filename ${filename:2}; done
 	find . -name "*.csv" -exec python3 ~/mail/chhserverscripts/scraper.py {} \; >> $SCRAPELOGFILE 2>&1
 #else
