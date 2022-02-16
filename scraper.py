@@ -166,7 +166,7 @@ for rownumber, row in enumerate(rows):
             # print(note)
 
         elif item == urgent_reason_string:
-            po.setglobal('Reason for Urgency', 'Ms Tan PO')
+            po.setglobal('Reason for Urgency', ['Ms Tan PO'])
 
         elif item == urgent_galvanised_string:
             galv_date_raw = rows[rownumber][colnumber+1]
