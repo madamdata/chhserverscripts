@@ -176,6 +176,7 @@ for rownumber, row in enumerate(rows):
                 print("Galvanised date not in %d/%m/%Y format: ", galv_date_raw)
                 pass
             po.setglobal('Galvanised/Fabrication Date (Requested)', dateobj.strftime('%Y-%m-%d'))
+            po.setglobal('Reason for Urgency', ['Ms Tan PO'])
 
         #scrape both the detail cell and the next cell to the right, using regex 
         #in case of weird formatting. Hopefully we don't have to keep doing this - regex is slow.

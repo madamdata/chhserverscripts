@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATESTRING=$(date +%d\_%b\_%Y)
+DATESTRING=$(date +%d\_%b\_%Y_%H_%M)
 WORKINGDIRECTORY="/home/chh/mail"
 ALOGFILENAME="attachments/log/attachscript.log"
 SLOGFILENAME="attachments/log/scrape.log"
