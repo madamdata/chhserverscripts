@@ -173,7 +173,12 @@ for rownumber, row in enumerate(rows):
             try: 
                 dateobj = datetime.datetime.strptime(galv_date_raw, '%d/%m/%Y')
             except ValueError:
-                print("Galvanised date not in %d/%m/%Y format: ", galv_date_raw)
+                # print("Galvanised date not in %d/%m/%Y format: ", galv_date_raw)
+                pass
+            try: 
+                dateobj = datetime.datetime.strptime(galv_date_raw, '%Y-%m-%d')
+            except ValueError:
+                # print("Galvanised date not in %d/%m/%Y format: ", galv_date_raw)
                 pass
             po.setglobal('Galvanised/Fabrication Date (Requested)', dateobj.strftime('%Y-%m-%d'))
             po.setglobal('Reason for Urgency', ['Ms Tan PO'])

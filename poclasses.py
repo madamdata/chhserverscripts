@@ -59,7 +59,7 @@ class PO:
         ex_proof = False
         if re.match(r'.*pole.*pole.*', ds_lower_stripnewline):
                 self.globaldetails['Detail (Multi Pole)'] = 'True'
-        if re.match(r'.*series.*series.*', ds_lower_stripnewline):
+        if re.match(r'.*class.*class.*', ds_lower_stripnewline):
                 self.globaldetails['Detail (Multi Class)'] = 'True'
         if re.match(r'.*series.*series.*', ds_lower_stripnewline):
                 self.globaldetails['Detail (Multi Voltage)'] = 'True'
@@ -202,7 +202,7 @@ class POItem:
         """
         modelstring = modelstring.replace('\n', ' ')
         fields = {}
-        match = re.match(r'^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$', modelstring)
+        match = re.match(r'^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? ? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$', modelstring)
         match2 = re.match(r'^(RS|RSM) ([0-9]+)(-[\d.]+[dD])(.*)?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
