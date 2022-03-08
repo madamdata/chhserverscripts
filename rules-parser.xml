@@ -12,6 +12,7 @@
 		<field type="Document level">
 			<name>issuedate</name>
 			<trigger type='raw'>Date</trigger>
+			<maxtriggers>1</maxtriggers>
 			<cell>1, 0</cell>
 			<outputfield>PO Date</outputfield>
 			<action>Direct Output</action>
@@ -19,7 +20,13 @@
 		<field type="Document level">
 			<name>deliverydate</name>
 			<trigger type='raw'>Delivery</trigger>
+			<maxtriggers>1</maxtriggers>
 			<cell>1, 0</cell>
+			<checkfunction type='typecheck'>
+				<checkif>NOMATCH</checkif>
+				<typename>datetime</typename>
+				<checkstring>deliveryNotADate </checkstring>
+			</checkfunction>
 			<outputfield>Delivery Date</outputfield>
 			<action>Direct Output</action>
 		</field> 
@@ -33,13 +40,14 @@
 		<field type="Document level">
 			<name>note</name>
 			<trigger type='raw'>**Note</trigger>
+			<maxtriggers>1</maxtriggers>
 			<cell>1, 0</cell>
 			<cell>2, 0</cell>
 			<checkfunction type='regex'>
-				<regex>^.+\n.+$</regex>
+				<regex>\n</regex>
 				<!--<regex>^DETAIL.*$</regex>-->
 				<checkif>MATCH</checkif>
-				<checkstring>Multi Line</checkstring>
+				<checkstring>noteMultiLine </checkstring>
 			</checkfunction>
 			<outputfield>Note Raw</outputfield>
 			<action>Direct Output</action>
@@ -47,6 +55,7 @@
 		<field type="Document level">
 			<name>detail</name>
 			<trigger type='regex'>^DETAIL.+</trigger>
+			<maxtriggers>1</maxtriggers>
 			<cell>0, 0</cell>
 			<cell>1, 0</cell>
 			<outputfield>Detail Raw</outputfield>
@@ -55,23 +64,24 @@
 				<regex>^.+\n.+$</regex>
 				<!--<regex>^DETAIL.*$</regex>-->
 				<checkif>MATCH</checkif>
-				<checkstring>multiline </checkstring>
+				<checkstring>detailMultiLine </checkstring>
 			</checkfunction>
 			<checkfunction type='regex'>
 				<regex>(?i)(.|\n)+?(class|cl)(.|\n)+?(class|cl)(.|\n)+?$</regex>
 				<checkif>MATCH</checkif>
-				<checkstring>multiclass </checkstring>
+				<checkstring>detailMultiClass </checkstring>
 			</checkfunction>
 			<checkfunction type='regex'>
 				<regex>(?i)(.|\n)+?(series)(.|\n)+?(series)(.|\n)+?$</regex>
 				<checkif>MATCH</checkif>
-				<checkstring>multiseries </checkstring>
+				<checkstring>detailMultiSeries </checkstring>
 			</checkfunction>
 			<action>Direct Output</action>
 		</field> 
 		<field type="Document level">
 			<name>galvanised</name>
 			<trigger type='raw'>Galvanised</trigger>
+			<maxtriggers>1</maxtriggers>
 			<cell>1, 0</cell>
 			<outputfield>Galvanised</outputfield>
 			<action>Direct Output</action>
@@ -85,20 +95,27 @@
 		</field> 
 		<field type="Table">
 			<name>maintable</name>
+			<maxtriggers>1</maxtriggers>
 			<trigger type='raw'>ITEM</trigger>
 			<trigger type='raw'>item</trigger>
 			<trigger type='raw'>Item</trigger>
 			<checkfunction type='regex'>
-				<header>(?i)(item)</header>
+				<header>(?i)(item).*</header>
 				<regex>(?i)([A-Z])\d</regex> <!--search for 'A1', 'B2' etc-->
 				<checkif>MATCH</checkif>
 				<checkstring>multiTypeItem </checkstring>
 			</checkfunction>
 			<checkfunction type='regex'>
-				<header>(?i)(item)</header>
-				<regex>testing</regex>
+				<header>(?i)model.*</header>
+				<regex>(?i).*mml.*mml.*</regex>
 				<checkif>MATCH</checkif>
-				<checkstring>foooo</checkstring>
+				<checkstring>multimmL</checkstring>
+			</checkfunction>
+			<checkfunction type='regex'>
+				<header>.*</header>
+				<regex>\n</regex>
+				<checkif>MATCH</checkif>
+				<checkstring>linebreak</checkstring>
 			</checkfunction>
 			<action>Parse Table</action>
 			<tablefield>

@@ -17,8 +17,14 @@ class InputFieldParser:
         self.triggers = []
         self.cells = []
         self.checkfunctions = []
+        self.timestriggered = 0
         # load triggers, cells, actions etc
         self.name = tree.find('name').text
+        try:
+            self.maxtriggers = int(getTreeText(tree, 'maxtriggers', '1'))
+        except:
+            print('maxtriggers not an integer')
+
         outputfield = tree.find('outputfield')
         # get the output field name
         if outputfield != None:
@@ -104,14 +110,27 @@ class InputFieldParser:
         output = None
         extracheckstrings = ''
         if self.matchTrigger(string):
+            # check if this has been triggered more than the number of times specified
+            self.timestriggered += 1
+            if self.timestriggered > self.maxtriggers:
+                maxtrigchkstr = '{name}: triggered {times} times. Max triggers set to {maxtriggers}'.format(\
+                        name = self.name,
+                        times = self.timestriggered,
+                        maxtriggers = self.maxtriggers )
+                extracheckstrings += maxtrigchkstr
+
+            #check what kind of action to take
             actionname = self.actiontype
             if actionname == 'Direct Output': 
                 actionname = 'getCells'
             elif actionname == 'Parse Table':
                 actionname = 'parseTable'
-            action = getattr(self, actionname) #find the method of this class that matches the 'actiontype' string
+            #find the method of this class that matches the 'actiontype' string
+            action = getattr(self, actionname) 
+
             # the 'action' function is responsible for running the check functions of this inputfield
-            output, extracheckstrings = action(self.tree, data_rows, coordinateTuple)
+            output, checkstrings = action(self.tree, data_rows, coordinateTuple)
+            extracheckstrings += checkstrings
             # check output and store the result in the POField's checkFlag and checkString
         return output, extracheckstrings
 
@@ -132,7 +151,7 @@ class InputFieldParser:
                     return False
             elif trigtype == 'regex':
                 # print(txt, string)
-                if re.match(txt, str(string)):
+                if re.search(txt, str(string)):
                    return True
                 else: 
                     return False
@@ -152,11 +171,18 @@ class InputFieldParser:
             # y first, then x. Just a quirk of how the spreadsheet is stored. 
             targetcell = data_rows[ycoord+yoffset][xcoord+xoffset]
             if targetcell: 
-                if targetcell.__class__.__name__ == 'datetime':
-                    output += targetcell.strftime('%Y-%m-%d')
+                # if more than one cell, assume everything is a string and concat. 
+                if len(self.cells) > 1: 
+                    if targetcell.__class__.__name__ == 'datetime':
+                        output += targetcell.strftime('%Y-%m-%d')
+                        output += ' '
+                    else:
+                        output += targetcell
+                        output += ' '
+                # otherwise, preserve the data type, especially for dates
                 else:
-                    output += targetcell
-            output += ' '
+                    output = targetcell
+        # create a POField with the proper header (self.outputfield) and value (output)
         field = POField(self.outputfield, output)
         self.runCheckFunctions(field)
         return field, ''
@@ -187,8 +213,8 @@ class POParser:
             else: # make a new InputFieldParser object 
                 self.inputfields.append(InputFieldParser(item))
         # populate the list of output fields. These will go into the final PO object.
-        for item in outputs.iter('name'):
-            self.outputfields.append(item.text)
+        # for item in outputs.iter('name'):
+            # self.outputfields.append(item.text)
 
     def parse(self, data_rows):
         """ 
@@ -263,7 +289,7 @@ class TableParser:
 
     def parse(self, data_rows, coordinateTuple):
         """
-        returns a list of POItems and an extra check string
+        returns a POItemList of POItems and an extra check string
         """
         self.rawtable = data_rows
         xcoord = coordinateTuple[0]
@@ -272,7 +298,7 @@ class TableParser:
         self.headers = [header for header in self.rawtable[ycoord] if header != None]
         rowNumbers, gapCheckString = self.getItemRowNumbers(self.tablestartcoord)
         colNumbers, itemHeader = self.getHeadersAndColumnNumbers(self.tablestartcoord)
-        output = []
+        output = POItemList()
         for row in rowNumbers:
             po_item = POItem()
             for header, column in colNumbers: 
@@ -286,7 +312,7 @@ class TableParser:
                     except AttributeError:
                         print("No header defined for checkfunction!")#Nonetype has no attribute 'text'
                     else:
-                        if re.match(headerregex, header):
+                        if re.search(headerregex, header):
                             flag, string = checkFunction(checkfunctree, field)
                             # print(string)
                             checkFlags.append(flag)
@@ -296,7 +322,7 @@ class TableParser:
 
                 #add the field to the growing POItem
                 po_item.addField(field)
-            output.append(po_item)
+            output.addPOItem(po_item)
                 
 
         return output, gapCheckString
@@ -317,12 +343,43 @@ class PO:
 
     def printAll(self):
         for item in self.items:
-            if item.__class__.__name__ == 'list':
-                for poitem in item:
-                    poitem.printVal()
-            else:
-                item.printVal()
+            item.printVal()
+            # if item.__class__.__name__ == 'POItemList':
+                # for poitem in item:
+                    # poitem.printVal()
+            # else:
+                # item.printVal()
+        print('Filename: ', self.filename)
+
+    def summarizeCheckStrings(self):
+        checkstrings = ''
+        for item in self.items:
+            checkstrings += item.getCheckString()
+
+        if 'multiTypeItem' in checkstrings:
+            checkstrings = checkstrings.replace('multiTypeItem ', '')
+            checkstrings += 'multiTypeItems'
+
+        print('Summary of check strings: ', checkstrings)
         print('Extra checks: ', self.extracheckstrings)
+             
+            
+class POItemList:
+    def __init__(self):
+        self.poitems = []
+
+    def addPOItem(self, item):
+        self.poitems.append(item)
+
+    def printVal(self):
+        for item in self.poitems:
+            item.printVal()
+
+    def getCheckString(self):
+        checkstring = ''
+        for item in self.poitems:
+            checkstring += item.getCheckString()
+        return checkstring
 
 class POItem:
     def __init__(self):
@@ -339,6 +396,12 @@ class POItem:
             outputstring += self.fields[key].getValString() + ' | '
         print(outputstring)
 
+    def getCheckString(self):
+        checkstring = ''
+        for key, field in self.fields.items():
+            checkstring += field.getCheckString()
+        return checkstring
+
     def getByHeader(self, header):
         return self.fields[header].value
 
@@ -348,6 +411,7 @@ class POField:
     ideally, will only be a data struct and not hold a lot of functions
     """ 
     def __init__(self, header, value):
+        # self.value = str(value).replace('\n', ' @nl ')
         self.value = value
         self.header = header
         self.checkFlag = False
@@ -361,14 +425,19 @@ class POField:
             checkoutput = ' c: ' + self.checkString
         else:
             checkoutput = ''
-        return (str(self.value) + checkoutput)
+        if self.value.__class__.__name__ == 'datetime':
+            valstring = self.value.strftime('%Y-%m-%d')
+        else:
+            valstring = str(self.value)
+        return (valstring.replace('\n', ' @nl ') + checkoutput)
+
+    def getCheckString(self):
+        return self.checkString
 
     def printVal(self):
-        if self.checkFlag:
-            checkoutput = ' c: ' + self.checkString
-        else:
-            checkoutput = ''
-        print(self.header, ': ', self.value, checkoutput)
+        valstring = self.getValString()
+        print(self.header, ': ', valstring)
+        # print(self.header, ': ', valstring, checkoutput)
 
 
 # ------------ misc global functions -------------
@@ -376,44 +445,63 @@ class POField:
 def checkFunction(tree, pofield):
     """ returns a tuple with a single checkFlag (bool) and a single checkstring (str) """ 
     checktype = tree.attrib['type']
+    checkif = getTreeText(tree, 'checkif', 'match').lower()
+    # checkif - does the function set check flag if there's a match, or if there is no match?
+    # can be True (match) or False (nomatch). 
+    if checkif == 'match':
+        checkif = True
+    else:
+        checkif = False
+
+    checkstring = getTreeText(tree, 'checkstring', '')
+    nocheckstring = getTreeText(tree, 'nocheckstring', '')
+    outputstring = ''
+    outputflag = False
+
     if checktype == 'regex': #for regex checkfuncs..
         # get the field 'checkstring' etc - if not present, default to empty string
-        checkstring = getTreeText(tree, 'checkstring', '')
-        nocheckstring = getTreeText(tree, 'nocheckstring', '')
-        outputstring = ''
-        outputflag = False
-
-        # checkif - does the function set check flag if there's a match, or if there is no match?
-        # can be True (match) or False (nomatch). 
-        checkif = getTreeText(tree, 'checkif', 'match').lower()
-        if checkif == 'match':
-            checkif = True
-        else:
-            checkif = False
-
         try:
             # see if whoever input the function into the xml provided a regex. If not, 
             # raise an exception.
             regex = tree.find('regex').text
-            string = pofield.value 
+            string = str(pofield.value)
         except AttributeError:
             print("No regex defined!")
             regex = ''
             return (False, '')
         else:
-            if re.match(regex, string):
+            if re.search(regex, string):
                 check = checkif
             else:
                 check = not checkif
 
-            if check:
-                outputstring = checkstring
-                outputflag = True
-            else: 
-                outputstring = nocheckstring
-                outputflag = False
+            # if check:
+                # outputstring = checkstring
+                # outputflag = True
+            # else: 
+                # outputstring = nocheckstring
+                # outputflag = False
 
-            return (outputflag, outputstring)
+            # return (outputflag, outputstring)
+
+    elif checktype == 'typecheck':
+        typestring = tree.find('typename').text
+        datatype = pofield.value.__class__.__name__
+        if typestring == datatype:
+            check = checkif
+            # print('fooo')
+        else:
+            check = not checkif
+
+    if check:
+        outputstring = checkstring
+        outputflag = True
+    else: 
+        outputstring = nocheckstring
+        outputflag = False
+        
+    return outputflag, outputstring
+
             # outputstring += ' '
             
 

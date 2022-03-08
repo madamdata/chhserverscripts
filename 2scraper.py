@@ -20,23 +20,33 @@ if __name__ == '__main__':
     filename = os.path.basename(filepath)
     excelfile = load_workbook(filename = filepath, data_only=True)
     sheetnames = excelfile.sheetnames
-    data_rows = [] 
+    sheetdata = []
     for name in sheetnames: 
+        data_rows = [] 
         print('Parsing sheet:', name)
         sheet = excelfile[name]
         for row in sheet.iter_rows():
             rowvals = [x.value for x in row]
             data_rows.append(rowvals)
+        sheetdata.append(data_rows)
 
     # Parse the xml document for rules
 
-    tree = ET.parse('data.xml')
-    parser = poparser.POParser(tree)
+    parsertree = ET.parse('rules-parser.xml')
+    parser = poparser.POParser(parsertree)
     parser.filename = filename
     root = parser.tree.getroot()
 
 
-    # parse the excel data and get PO object
-    po = parser.parse(data_rows)
-    po.printAll()
+    # parse the excel data from THE FIRST SHEET ONLY and get PO object
+    po = parser.parse(sheetdata[0])
+    # check for multiple sheets
+    if len(sheetnames) > 1:
+        multiple_sheets = True
+        po.addExtraCheckStrings('MULTIPLE SHEETS IN THIS FILE')
 
+    po.printAll()
+    po.summarizeCheckStrings()
+
+    print('-----------------------------')
+    print('\n')
