@@ -256,6 +256,8 @@ class POItem:
             item = match4.group(1)
             size = match4.group(2)
             silencer_size = match4.group(3)
+            if silencer_size == '-4W c/w Aluminium Capacitor':
+                silencer_size = '-4 c/w AL'
             if match4.group(4):
                 fan_direction = match4.group(4)
         

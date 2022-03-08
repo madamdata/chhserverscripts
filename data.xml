@@ -55,17 +55,17 @@
 				<regex>^.+\n.+$</regex>
 				<!--<regex>^DETAIL.*$</regex>-->
 				<checkif>MATCH</checkif>
-				<checkstring>Multi Line</checkstring>
+				<checkstring>multiline </checkstring>
 			</checkfunction>
 			<checkfunction type='regex'>
 				<regex>(?i)(.|\n)+?(class|cl)(.|\n)+?(class|cl)(.|\n)+?$</regex>
 				<checkif>MATCH</checkif>
-				<checkstring>multi class</checkstring>
+				<checkstring>multiclass </checkstring>
 			</checkfunction>
 			<checkfunction type='regex'>
 				<regex>(?i)(.|\n)+?(series)(.|\n)+?(series)(.|\n)+?$</regex>
 				<checkif>MATCH</checkif>
-				<checkstring>multi series</checkstring>
+				<checkstring>multiseries </checkstring>
 			</checkfunction>
 			<action>Direct Output</action>
 		</field> 
@@ -88,6 +88,18 @@
 			<trigger type='raw'>ITEM</trigger>
 			<trigger type='raw'>item</trigger>
 			<trigger type='raw'>Item</trigger>
+			<checkfunction type='regex'>
+				<header>(?i)(item)</header>
+				<regex>(?i)([A-Z])\d</regex> <!--search for 'A1', 'B2' etc-->
+				<checkif>MATCH</checkif>
+				<checkstring>multiTypeItem </checkstring>
+			</checkfunction>
+			<checkfunction type='regex'>
+				<header>(?i)(item)</header>
+				<regex>testing</regex>
+				<checkif>MATCH</checkif>
+				<checkstring>foooo</checkstring>
+			</checkfunction>
 			<action>Parse Table</action>
 			<tablefield>
 				ITEM
@@ -95,15 +107,4 @@
 			</tablefield>
 		</field> 
 	</inputs>
-	<outputs>
-		<name>PO Number</name>
-		<name>PO Date</name>
-		<name>Delivery Date</name>
-		<name>Project Site</name>
-		<name>Note Raw</name>
-		<name>Detail Raw</name>
-		<name>Galvanised</name>
-		<name>Reason</name>
-
-	</outputs> 
 </poparser>
