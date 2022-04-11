@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import parser as poparser
+import processor as poprocessor
 import sys, os, pyairtable, logger
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv, dotenv_values
@@ -20,10 +21,14 @@ if __name__ == '__main__':
     filename = os.path.basename(filepath)
     excelfile = load_workbook(filename = filepath, data_only=True)
     sheetnames = excelfile.sheetnames
+    sheetFileMismatch = False
     sheetdata = []
     for name in sheetnames: 
         data_rows = [] 
         print('Parsing sheet:', name)
+        if name not in filename:
+            print('sheet name not the same as filename!!')
+            sheetFileMismatch = True
         sheet = excelfile[name]
         for row in sheet.iter_rows():
             rowvals = [x.value for x in row]
@@ -35,18 +40,28 @@ if __name__ == '__main__':
     parsertree = ET.parse('rules-parser.xml')
     parser = poparser.POParser(parsertree)
     parser.filename = filename
-    root = parser.tree.getroot()
 
 
     # parse the excel data from THE FIRST SHEET ONLY and get PO object
     po = parser.parse(sheetdata[0])
+    if sheetFileMismatch:       
+        po.addExtraCheckStrings('sheetFileMismatch')
     # check for multiple sheets
     if len(sheetnames) > 1:
         multiple_sheets = True
         po.addExtraCheckStrings('MULTIPLE SHEETS IN THIS FILE')
 
+    print('---------- PARSER OUTPUT -----------\n')
+
     po.printAll()
     po.summarizeCheckStrings()
 
-    print('-----------------------------')
-    print('\n')
+    print('---------- PROCESSOR OUTPUT -----------\n')
+
+    #PROCESSOR
+    processortree = ET.parse('rules-processor.xml')
+    processor = poprocessor.POProcessor(processortree)
+    nodenetwork = processor.parse(po)
+    nodenetwork.listNodes()
+
+    print('-----------------------------\n')

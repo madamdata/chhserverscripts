@@ -10,7 +10,7 @@ echo "Backing up to $BACKUPFILENAME ..."
 rclone sync $HOME/mail/backup iningDropbox:backup
 
 echo "Deleting files older than 7 days ..."
-find backup/* -mtime +7 -exec rm {} \;
+find backup/* -mtime +5 -exec rm {} \;
 
 ~/mail/chhserverscripts/add_day_separator.sh
 

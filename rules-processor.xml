@@ -1,0 +1,77 @@
+<processor-rules>
+	<!--types - splitregex,  matchandtranslate-->
+	<globalrules>
+		<rule>
+			<type>splitregex</type>
+			<input>Detail Raw</input>
+			<name>detailsplit</name>
+			<split>
+				<regex>DETAIL</regex>
+				<node>detailfoo</node>
+			</split>
+			<split>
+				<regex>(Teco|Att) Motor</regex>
+				<group>1</group>
+				<node>motorfoo</node>
+			</split>
+		</rule>
+	</globalrules>
+	<itemrules>
+		<rule>
+			<type>splitregex</type>
+			<name>modelstring</name>
+			<input>MODEL</input>
+			<split>
+				<regex>^(BIF|AND|RV|DQ|RSM)</regex>
+				<group>1</group>
+				<node>modelstringItem</node>
+			</split>
+			<split>
+				<regex>(-Ex|-GVD|-CR|-T)</regex>
+				<group>1</group>
+				<node>modelstringExtra</node>
+			</split>
+			<split>
+				<regex>(-Ex|-GVD|-CR|-T)</regex>
+				<group>1</group>
+				<node>modelstringExtra</node>
+			</split>
+			<!--<regex input='MODEL'>^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? ? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$</regex>-->
+			
+
+		</rule>
+
+		<rule>
+			<name>translateItemType</name>
+			<type>matchandtranslate</type>
+			<input>itemtype</input>
+			<input>additionalinfo</input>
+			<out>
+				<match input='itemtype'>AND</match>
+				<node>itemtypeTranslated</node>
+				<value>Ax</value>
+			</out>
+			<out>
+				<match input='itemtype'>Bif</match>
+				<node>itemtypeTranslated</node>
+				<value>Bif</value>
+			</out>
+			<out>
+				<match input='itemtype'>Bif</match>
+				<match input='additionalinfo'>-T</match>
+				<node>itemtypeTranslated</node>
+				<value>Bif T/p</value>
+			</out>
+			<out>
+				<match input='itemtype'>RV</match>
+				<node>itemtypeTranslated</node>
+				<value>RV - Ax</value>
+			</out>
+			<out>
+				<match input='itemtype'>DQ</match>
+				<node>itemtypeTranslated</node>
+				<value>DQ - Ax</value>
+			</out>
+		</rule>
+	</itemrules>
+</processor-rules>

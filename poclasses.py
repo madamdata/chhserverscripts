@@ -41,8 +41,11 @@ class PO:
         self.items.append(poitem)
 
     def parseNoteString(self, notestring):
+        self.globaldetails['Grease Nipple Remark / See Sample'] = ''
         if re.match(r'.*w\/o grease nipples.*', notestring):
-            self.globaldetails['Grease Nipple Remark / See Sample'] = '不要加打油'
+            self.globaldetails['Grease Nipple Remark / See Sample'] += '不要加打油'
+        if re.match(r'.*the fan dimensions according to the sample sent.*', notestring):
+            self.globaldetails['Grease Nipple Remark / See Sample'] += '照样本做'
         search_holding_brackets = re.match(r'.*holdingbrackets\((\d+)"x(\d+)"\).*', notestring.replace(' ', ''))
         if search_holding_brackets:
             self.globaldetails['F/B (scraped)'] = 'F/B ' + search_holding_brackets.group(1) + 'in x ' \
@@ -189,11 +192,13 @@ class POItem:
         for param, aliases in self.__class__.input_params_list.items():
             if entry_header in aliases:
                 self.input_dict[param] = entry_data
+                # print(entry_header, entry_data)
 
     def addEntryDict(self, entriesDict):
         """ addEntry, but with a dictionary of items rather than a tuple with a single item """ 
         for k,v in entriesDict.items():
-            self.addEntry((k,v))
+            if not (k == 'Motor Class' and v == None):
+                self.addEntry((k,v))
 
     def parse_model_string(self, modelstring): #called by convert()
         """ 
@@ -203,7 +208,7 @@ class POItem:
         modelstring = modelstring.replace('\n', ' ')
         fields = {}
         match = re.match(r'^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? ? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$', modelstring)
-        match2 = re.match(r'^(RS|RSM) ([0-9]+)(-[\d.]+[dD])(.*)?', modelstring)
+        match2 = re.match(r'^(RS|RSM)[ -]([0-9]+)(-[\d.]+[dDL])(.*)?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
         match5 = re.match(r'^(Guide Vane) (\d+).*?(\d+ Blades), ?(\d+)mmL', modelstring)
@@ -218,7 +223,10 @@ class POItem:
                 casing_length = match.group(7)
 
             if item == 'AND':
-                item = 'Ax'
+                if extra == 'Ex':
+                    item = 'Ax-Ex'
+                else:
+                    item = 'Ax'
             elif item == 'BIF':
                 if extra == '-T':
                     item = 'Bif T/p'
@@ -238,9 +246,15 @@ class POItem:
             motor_speed = '-'
             if match2.group(3):
                 silencer_size = match2.group(3)
+                sizematch = re.match(r'(-[0-9]+)L', silencer_size)
+                if sizematch:
+                    silencer_size = sizematch.group(1) + 'mmL (Collar Type)'
+                    size = match2.group(2)
+
                 if match2.group(4):
                     if match2.group(4) == ' c/w Melinex':
                         silencer_size = silencer_size + match2.group(4)
+
 
         elif match3:
             gr1 = match3.group(1)
@@ -258,6 +272,8 @@ class POItem:
             silencer_size = match4.group(3)
             if silencer_size == '-4W c/w Aluminium Capacitor':
                 silencer_size = '-4 c/w AL'
+            if silencer_size == '-4 EX':
+                silencer_size = '-4-EX'
             if match4.group(4):
                 fan_direction = match4.group(4)
         
@@ -274,11 +290,14 @@ class POItem:
         fields['Item'] = item
         fields['Size'] = size
         fields['Motor Size'] = motor_size
-        if motor_class != None: #only set this if there's something to be set, otherwise it will override a potential global motor class with None
+        if motor_class != None: 
+            #only set this if there's something to be set, otherwise it will override a potential global motor class with None
             fields['Motor Class'] = motor_class
-        if motor_brand != None: #only set this if there's something to be set, otherwise it will override a potential global motor class with None
+        if motor_brand != None: 
+            #only set this if there's something to be set, otherwise it will override a potential global motor class with None
             fields['Motor Brand'] = motor_brand
-        if motor_speed != None: #only set this if there's something to be set, otherwise it will override a potential global motor class with None
+        if motor_speed != None: 
+            #only set this if there's something to be set, otherwise it will override a potential global motor class with None
             fields['Motor Speed'] = motor_speed
         fields['Impeller'] = impeller
         fields['Silencer Size'] = silencer_size
@@ -319,9 +338,10 @@ class POItem:
             output_data['Motor Size'] = motor_number
         elif key == 'Motor Class':
             motor_class = self.input_dict['Motor Class']
+            # print(motor_class)
             if motor_class != None:
                 if re.match(r'^[a-zA-Z]$', motor_class):  #if it's a single letter, add 'class', else pass it along
-                    motor_class = 'Class' + motor_class.upper()
+                    motor_class = 'Class ' + motor_class.upper()
                     # output_data['Motor Class'] = motor_class
             output_data['Motor Class'] = motor_class
 

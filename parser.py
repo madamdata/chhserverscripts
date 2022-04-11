@@ -331,11 +331,16 @@ class TableParser:
 class PO:
     def __init__(self):
         self.items = [] 
+        self.poitemlist = None
         self.filename = ''
         self.extracheckstrings = ''
 
     def addItem(self, item):
-        self.items.append(item)
+        if item.__class__.__name__ == 'POField':
+            self.items.append(item)
+        if item.__class__.__name__ == 'POItemList':
+            self.poitemlist = item
+        
         # print(item.__class__)
 
     def addExtraCheckStrings(self, string):
@@ -349,13 +354,20 @@ class PO:
                     # poitem.printVal()
             # else:
                 # item.printVal()
+        self.poitemlist.printVal()
         print('Filename: ', self.filename)
 
     def summarizeCheckStrings(self):
         checkstrings = ''
         for item in self.items:
             checkstrings += item.getCheckString()
+        
+        try:
+            checkstrings +=self.poitemlist.getCheckString()
+        except AttributeError:
+            print("No POItemList in this PO Object.")
 
+        # avoid multiple 'multiTypeItem' flags - usually if there's one, it's the same for every item
         if 'multiTypeItem' in checkstrings:
             checkstrings = checkstrings.replace('multiTypeItem ', '')
             checkstrings += 'multiTypeItems'
@@ -399,11 +411,27 @@ class POItem:
     def getCheckString(self):
         checkstring = ''
         for key, field in self.fields.items():
-            checkstring += field.getCheckString()
+            newcheckstring = field.getCheckString()
+            # label checkstrings with the item (this POItem) that they came from,
+            # for easier checking
+            if (not 'multiTypeItem' in newcheckstring) and newcheckstring != '':
+                try:
+                    checkstring += self.fields['ITEM'].value
+                    checkstring += '-'
+                except:
+                    pass
+            checkstring += newcheckstring
         return checkstring
 
     def getByHeader(self, header):
         return self.fields[header].value
+
+    def getItemNumber(self):
+        try:
+            itemnumber = self.fields['ITEM'].value
+        except:
+            itemnumber = 'No Item Number'
+        return itemnumber
 
 class POField:
     """ 

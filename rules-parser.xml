@@ -115,7 +115,7 @@
 				<header>.*</header>
 				<regex>\n</regex>
 				<checkif>MATCH</checkif>
-				<checkstring>linebreak</checkstring>
+				<checkstring>linebreak </checkstring>
 			</checkfunction>
 			<action>Parse Table</action>
 			<tablefield>
