@@ -5,8 +5,13 @@ import re, os, sys, copy
 class POProcessor:
     """ Top level class for reading, parsing and executing rules in rules-processor.xml """
     def __init__(self, tree):
-        self.globalrules = []
-        self.itemrules = []
+        # all the rules
+        self.globalrules = {}
+        self.itemrules = {}
+        # dictionaries to store refs to the rules that will be called first, without being pointed to
+        self.globalinitrules = {}
+        self.iteminitrules = {}
+
         self.nodenetwork = PONodeNetwork()
         self.tree = tree
 
@@ -14,13 +19,27 @@ class POProcessor:
         # load rules from the xml
         globalruletree = tree.find('globalrules')
         for ruletree in globalruletree.findall('rule'):
-            self.globalrules.append(ProcessorRule(ruletree, 'global'))
+            self.addGlobalRule(ProcessorRule(ruletree, 'global'))
             
         itemruletree = tree.find('itemrules')
         for ruletree in itemruletree.findall('rule'):
-            self.itemrules.append(ProcessorRule(ruletree, 'item'))
+            self.addItemRule(ProcessorRule(ruletree, 'item'))
 
+    def addGlobalRule(self, rule):
+        self.globalrules[rule.name] = rule
+        if rule.sequence == 'init':
+            self.globalinitrules[rule.name] = rule
+        
+    def addItemRule(self, rule):
+        self.itemrules[rule.name] = rule
+        if rule.sequence == 'init':
+            self.iteminitrules[rule.name] = rule
 
+    def getGlobalRule(self, rulename):
+        return self.globalrules[rulename]
+
+    def getItemRule(self, rulename):
+        return self.itemrules[rulename]
 
     def parse(self, po_object):
         # initialize starting nodes from the po object
@@ -31,30 +50,24 @@ class POProcessor:
             newnetwork = POItemNetwork.fromPOItem(poitem)
             self.nodenetwork.addpoitem(newnetwork)
 
-        # create blank nodes by scanning the xml 
-        # tempNodeDict is used to remove duplicates
-        # first globals, then items
-        globalruletree = self.tree.find('globalrules')
-        itemruletree = self.tree.find('itemrules')
-        tempNodeDict = {}
-        for node in globalruletree.iter('node'):
-            tempNodeDict[node.text] = None
-        for header in tempNodeDict:
-            newnode = POFieldNode(header, None)
-            self.nodenetwork.addNode(newnode)
-
-        tempNodeDict = {}
-        for node in itemruletree.iter('node'):
-            tempNodeDict[node.text] = None
-        for header in tempNodeDict:
-            newnode = POFieldNode(header, None)
-            self.nodenetwork.addItemNode(newnode)
             
         # Apply global rules, then individual item rules
-        for rule in self.globalrules:
-            rule.applyRule(self.nodenetwork)
-        for rule in self.itemrules:
-            rule.applyRule(self.nodenetwork)
+        for header, rule in self.globalinitrules.items():
+            nextrulename = rule.applyRule(self.nodenetwork)
+            while nextrulename != None:
+                nextrule = self.globalrules[nextrulename]
+                nextrulename = nextrule.applyRule(self.nodenetwork)
+                
+        for header, rule in self.iteminitrules.items():
+            nextrulename = rule.applyRule(self.nodenetwork)
+            while nextrulename != None:
+                try:
+                    nextrule = self.itemrules[nextrulename]
+                except KeyError:
+                    print("Next rule not found: ", nextrulename)
+                    break
+
+                nextrulename = nextrule.applyRule(self.nodenetwork)
         
         return self.nodenetwork
 
@@ -69,7 +82,17 @@ class ProcessorRule:
         self.scope = scope
         self.triggers = []
         try: 
-            self.type = tree.find('type').text.lower()
+            self.nextrule = tree.find('nextrule').text
+        except AttributeError:
+            self.nextrule = None
+
+        try: 
+            self.sequence = tree.find('sequence').text.lower()
+        except AttributeError:
+            self.sequence = None
+
+        try: 
+            self.type = tree.find('type').text
         except AttributeError:
             self.type = None
             print('Rule has no specified type. Defaulting to :')
@@ -79,6 +102,7 @@ class ProcessorRule:
             self.name = tree.find('name').text
         except AttributeError:
             print('no name provided.')
+            self.name = 'ERROR NO NAME'
 
         # load outs
         try:
@@ -95,38 +119,100 @@ class ProcessorRule:
 
 
     def applyRule(self, nodenetwork):
+        print('applying rule ', self.name)
         if self.scope == 'global':
-            if self.type == 'splitregex':
-                self.splitRegex(nodenetwork)
-                   # print(regex, node)
+            # find the correct function based on the self.type string
+            try: 
+                function = getattr(self, self.type)
+            except AttributeError:
+                print('No such function: ', self.type)
+            else:
+                function(nodenetwork)
 
         if self.scope == 'item':
-            if self.type == 'splitregex':
+            try: 
+                function = getattr(self, self.type)
+            except AttributeError:
+                print('No such function: ', self.type)
+            else:
                 for item in nodenetwork.poitems:
-                    self.splitRegex(item)
+                    function(item)
+            # if self.type == 'splitregex':
+                # for item in nodenetwork.poitems:
+                    # self.splitregex(item)
+
+        return self.nextrule
 
     def splitRegex(self, nodenetwork):
         # nodes = nodenetwork.nodes
         splits = self.tree.findall('split')
+        multisplits = self.tree.findall('multisplit')
         inputnodename = self.tree.find('input').text
         inputnode = nodenetwork.getNode(inputnodename)
         # inputnode = nodes[inputnodename] #a POFieldNode object
         for item in splits:
            regex = item.find('regex').text
-           nodename = item.find('node').text
+           groups = item.findall('group')
+
+           match = re.search(regex, inputnode.value)
+           for group in groups:
+               #make output nodes first
+               nodename = group.find('node').text
+               outnode = nodenetwork.getOrMakeNode(nodename)
+           if match:
+               #set the POFieldNode value to the specified group of the regex search
+               for group in groups:
+                   nodename = group.find('node').text
+                   outnode = nodenetwork.getOrMakeNode(nodename)
+                   groupnumber = int(group.find('groupnumber').text) 
+                   try:
+                       outnode.value = match.group(groupnumber)
+                   except:
+                       pass
+               # print(match, match.group(0))
+
+        for item in multisplits:
+           regex = item.find('regex').text
+           basenodename = item.find('node').text #node name template
            try:
                groupnumber = item.find('group').text
            except AttributeError:
                groupnumber = 0
            else: 
                groupnumber = int(groupnumber)
-
-           outnode = nodenetwork.getNode(nodename)
-           match = re.search(regex, inputnode.value)
-           if match:
+           matchlist = re.findall(regex, inputnode.value)
+           if matchlist != []:
                #set the POFieldNode value to the specified group of the regex search
-               outnode.value = match.group(groupnumber)
+               for item in matchlist:
+                   #make specific node name from basenodename template
+                   newnodename = basenodename.replace('{}', item[1])
+                   outnode = nodenetwork.getOrMakeNode(newnodename)
+                   outnode.value = item[0]
                # print(match, match.group(0))
+
+    def matchAndTranslate(self, nodenetwork):
+        inputs = self.tree.findall('input')
+        translations = self.tree.findall('translate')
+        for tr in translations:
+            matches = tr.findall('match')
+            outval = tr.find('value').text
+            outnodename = tr.find('node').text
+            outnode = nodenetwork.getOrMakeNode(outnodename)
+            matchTruth = []
+            for match in matches:
+                inp = match.attrib['input']
+                regex = match.text
+                inpdata = nodenetwork.getNode(inp).value
+                if not inpdata:
+                    inpdata = ''
+                if re.search(regex, inpdata): 
+                    matchTruth.append(True)
+                else: 
+                    matchTruth.append(False)
+
+            if all(matchTruth): #if and only if all matches are True, output the specified value
+                outnode.value = outval
+
 
 
 
@@ -137,6 +223,17 @@ class PONodeNetwork:
 
     def addNode(self, ponode):
         self.nodes[ponode.header] = ponode
+
+    def getOrMakeNode(self, nodename):
+        """if there is such a node in the network, return it. Otherwise, make a blank one and return that.
+            called by applyRule
+            """
+        if nodename in self.nodes:
+            return self.nodes[nodename]
+        else:
+            newnode = POFieldNode(nodename, None)
+            self.addNode(newnode)
+            return newnode
 
     def addItemNode(self, ponode):
         for item in self.poitems:
@@ -169,6 +266,17 @@ class POItemNetwork:
         self.poitem_object = poitem
         for header, field in poitem.fields.items():
             self.nodes[header] = POFieldNode.fromPOField(field)
+
+    def getOrMakeNode(self, nodename):
+        """if there is such a node in the network, return it. Otherwise, make a blank one and return that.
+            called by applyRule
+            """
+        if nodename in self.nodes:
+            return self.nodes[nodename]
+        else:
+            newnode = POFieldNode(nodename, None)
+            self.addNode(newnode)
+            return newnode
 
     def addNode(self, ponode):
         self.nodes[ponode.header] = ponode

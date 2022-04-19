@@ -207,11 +207,12 @@ class POItem:
         """
         modelstring = modelstring.replace('\n', ' ')
         fields = {}
-        match = re.match(r'^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? ? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$', modelstring)
+        match = re.match(r'^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T|-S)? ? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$', modelstring)
         match2 = re.match(r'^(RS|RSM)[ -]([0-9]+)(-[\d.]+[dDL])(.*)?', modelstring)
         match3 = re.match(r'^(Matching Flanges|Mounting Feet) ([0-9]+)mm.*$', modelstring)
         match4 = re.match(r'^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$', modelstring)
         match5 = re.match(r'^(Guide Vane) (\d+).*?(\d+ Blades), ?(\d+)mmL', modelstring)
+        match6 = re.match(r'^Ex-Proof Accessories', modelstring)
         item = size = impeller = silencer_size = fan_direction = casing_length = None
         motor_size = motor_class = motor_brand = motor_speed = None
         if match:
@@ -223,7 +224,7 @@ class POItem:
                 casing_length = match.group(7)
 
             if item == 'AND':
-                if extra == 'Ex':
+                if extra == '-Ex':
                     item = 'Ax-Ex'
                 else:
                     item = 'Ax'
@@ -248,11 +249,13 @@ class POItem:
                 silencer_size = match2.group(3)
                 sizematch = re.match(r'(-[0-9]+)L', silencer_size)
                 if sizematch:
-                    silencer_size = sizematch.group(1) + 'mmL (Collar Type)'
-                    size = match2.group(2)
+                    silencer_size = sizematch.group(1) + 'mmL'
+                    size = match2.group(2) + '0'
 
                 if match2.group(4):
                     if match2.group(4) == ' c/w Melinex':
+                        silencer_size = silencer_size + match2.group(4)
+                    if match2.group(4) == ' (Collar Type)':
                         silencer_size = silencer_size + match2.group(4)
 
 
@@ -283,7 +286,10 @@ class POItem:
             impeller = match5.group(3)
             casing_length = match5.group(4)
 
-        if not (match or match2 or match3 or match4 or match5):
+        elif match6:
+            item = 'Ex-Proof Accessories'
+
+        if not (match or match2 or match3 or match4 or match5 or match6):
             print("Model string doesn't match any known configuration: ", modelstring)
             return None
 

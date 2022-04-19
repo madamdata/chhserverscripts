@@ -2,76 +2,139 @@
 	<!--types - splitregex,  matchandtranslate-->
 	<globalrules>
 		<rule>
-			<type>splitregex</type>
-			<input>Detail Raw</input>
-			<name>detailsplit</name>
-			<split>
+			<name>detailsplit</name> <!--it is very important that each rule have a unique name-->
+
+			<!-- type is the name of the function performed by this rule. The function must be defined in the code --> 
+			<type>splitRegex</type>
+
+			<sequence>init</sequence><!--this means it doesn't have to be triggered by anything-->
+			<!--<nextrule>followtest</nextrule> [>the name of the next rule to apply if this one is triggered<]-->
+			<input>Detail Raw</input> <!--which node to get the data from--> 
+			<multisplit> <!--multisplit dynamically creates nodes based on multiple regex matches. eg (A), (B) etc-->
+				<regex>(\(([A-Z])\).+)</regex>
+				<group>1</group>
+				<node>split{}</node>
+			</multisplit>
+
+			<split><!-- split matches the FIRST instance of a regex and sends it to the specified node-->
 				<regex>DETAIL</regex>
-				<node>detailfoo</node>
+					<node>detailfoo</node>
 			</split>
 			<split>
 				<regex>(Teco|Att) Motor</regex>
-				<group>1</group>
-				<node>motorfoo</node>
+				<group> <!--if you need to extract only part of the match, specify the group number-->
+					<groupnumber>1</groupnumber>
+					<node>motorfoo</node>
+				</group>
+			</split>
+			<split>
+				<regex>([0-9] Pole)</regex>
+				<group>
+					<groupnumber>1</groupnumber>
+					<node>motorfoo</node>
+				</group>
 			</split>
 		</rule>
 	</globalrules>
+
+
 	<itemrules>
 		<rule>
-			<type>splitregex</type>
 			<name>modelstring</name>
+			<sequence>init</sequence> <!--this means it doesn't have to be triggered by anything-->
+			<nextrule>translatemodelstringItem</nextrule>
+			<type>splitRegex</type>
 			<input>MODEL</input>
 			<split>
-				<regex>^(BIF|AND|RV|DQ|RSM)</regex>
-				<group>1</group>
-				<node>modelstringItem</node>
+				<regex>^(BIF|AND|RV|DQ|RSM|Matching Flanges|Mounting Feet)</regex>
+				<group>
+					<groupnumber>1</groupnumber>
+					<node>modelstringItem</node>
+				</group>
+				<group>					
+					<groupnumber>2</groupnumber>
+					<node>modelstringExtra</node>
+				</group>
 			</split>
 			<split>
-				<regex>(-Ex|-GVD|-CR|-T)</regex>
-				<group>1</group>
-				<node>modelstringExtra</node>
+				<regex>^(DKHRC|DKHR|EKHR) ([0-9]+)(-.+?) ?(\(LG 0\))?$</regex>
+				<group>
+					<groupnumber>1</groupnumber>
+					<node>modelstringItem</node>
+				</group>
+				<group>					
+					<groupnumber>2</groupnumber>
+					<node>modelstringSize</node>
+				</group>
+				<group>					
+					<groupnumber>3</groupnumber>
+					<node>modelstringSilencerSize</node>
+				</group>
 			</split>
 			<split>
-				<regex>(-Ex|-GVD|-CR|-T)</regex>
-				<group>1</group>
-				<node>modelstringExtra</node>
+				<regex>([0-9]+)\/([0-9-]+\/.+)</regex> <!--xxxx/x-x/fooo format-->
+				<group>
+					<groupnumber>1</groupnumber>
+					<node>modelstringSize</node>
+				</group>
+				<group>
+					<groupnumber>2</groupnumber>
+					<node>modelstringImpeller</node>
+				</group>
+			</split>
+			<split>
+				<regex>[0-9]+\/[0-9-]+\/.+\(([0-9]+)mmL\)</regex>
+				<group>
+					<groupnumber>1</groupnumber>
+					<node>modelstringCasingLength</node>
+				</group>
 			</split>
 			<!--<regex input='MODEL'>^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? ? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$</regex>-->
-			
-
 		</rule>
 
 		<rule>
-			<name>translateItemType</name>
-			<type>matchandtranslate</type>
-			<input>itemtype</input>
-			<input>additionalinfo</input>
-			<out>
-				<match input='itemtype'>AND</match>
-				<node>itemtypeTranslated</node>
+			<name>translatemodelstringItem</name>
+			<type>matchAndTranslate</type>
+			<!--<nextrule>foo</nextrule>-->
+			<input>modelstringItem</input>
+			<input>modelstringExtra</input>
+			<!--<translate>-->
+				<!--<match input='modelstringItem'>AND</match>-->
+				<!--<match input='MOTOR'>14kw</match>-->
+				<!--<node>foofooofoo</node>-->
+				<!--<value>bar</value>-->
+			<!--</translate>-->
+			<translate>
+				<match input='modelstringItem'>AND</match>
+				<node>itemname</node>
 				<value>Ax</value>
-			</out>
-			<out>
-				<match input='itemtype'>Bif</match>
-				<node>itemtypeTranslated</node>
-				<value>Bif</value>
-			</out>
-			<out>
-				<match input='itemtype'>Bif</match>
-				<match input='additionalinfo'>-T</match>
-				<node>itemtypeTranslated</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>Bif</match>
+				<match input='modelstringExtra'>-T</match>
+				<node>itemname</node>
 				<value>Bif T/p</value>
-			</out>
-			<out>
-				<match input='itemtype'>RV</match>
-				<node>itemtypeTranslated</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>RV</match>
+				<node>itemname</node>
 				<value>RV - Ax</value>
-			</out>
-			<out>
-				<match input='itemtype'>DQ</match>
-				<node>itemtypeTranslated</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>DQ</match>
+				<node>itemname</node>
 				<value>DQ - Ax</value>
-			</out>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>Matching Flanges</match>
+				<node>itemname</node>
+				<value>MFlanges</value>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>Mounting Feet</match>
+				<node>itemname</node>
+				<value>MFeet</value>
+			</translate>
 		</rule>
 	</itemrules>
 </processor-rules>
