@@ -11,13 +11,28 @@ if __name__ == '__main__':
 
 
     # Load environment and initialize airtable interface
+    # load_dotenv()
+    # key = os.environ['AIRTABLEKEY']
+    # baseid = os.environ['AIRTABLEBASEID']
+    # remote_table = pyairtable.Table(key, baseid, 'testtable')
+
+    # TEMPORARY FOR WOLTER SCRAPING
     load_dotenv()
     key = os.environ['AIRTABLEKEY']
     baseid = os.environ['AIRTABLEBASEID']
-    remote_table = pyairtable.Table(key, baseid, 'testtable')
+    remote_table = pyairtable.Table(key, baseid, 'Table 1')
 
     # read excel file
     filepath = sys.argv[1]
+    try: 
+        potype = sys.argv[2]
+    except IndexError:
+        potype = 'rosenberg'
+    try: 
+        if sys.argv[3] == 'upload':
+            uploadflag = True
+    except IndexError:
+        uploadflag = False
     filename = os.path.basename(filepath)
     excelfile = load_workbook(filename = filepath, data_only=True)
     sheetnames = excelfile.sheetnames
@@ -32,12 +47,30 @@ if __name__ == '__main__':
         sheet = excelfile[name]
         for row in sheet.iter_rows():
             rowvals = [x.value for x in row]
-            data_rows.append(rowvals)
+            newrowvals = []
+            # print(rowvals)
+            for item in rowvals:
+                newitem = item
+                if item == ' ':
+                    newitem = None
+                newrowvals.append(newitem)
+                    
+            # if rowvals[0]:
+                # codes = ''
+                # for char in str(rowvals[0]):
+                    # codes += str(ord(char))
+                    # codes += '.'
+                # print(rowvals[0], codes)
+            # print(rowvals)
+            data_rows.append(newrowvals)
         sheetdata.append(data_rows)
 
     # Parse the xml document for rules
 
-    parsertree = ET.parse('rules-parser.xml')
+    if potype == 'wolter': 
+        parsertree = ET.parse('/home/chh/mail/chhserverscripts/rules-parser-wolter.xml')
+    elif potype == 'rosenberg':
+        parsertree = ET.parse('rules-parser.xml')
     parser = poparser.POParser(parsertree)
     parser.filename = filename
 
@@ -59,9 +92,13 @@ if __name__ == '__main__':
     print('---------- PROCESSOR OUTPUT -----------\n')
 
     #PROCESSOR
-    processortree = ET.parse('rules-processor.xml')
+    processortree = ET.parse('/home/chh/mail/chhserverscripts/rules-processor.xml')
     processor = poprocessor.POProcessor(processortree)
     nodenetwork = processor.parse(po)
     nodenetwork.listNodes()
 
     print('-----------------------------\n')
+
+
+    if uploadflag:
+        po.tempUploadFunc(remote_table)

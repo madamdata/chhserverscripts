@@ -150,45 +150,46 @@ class ProcessorRule:
         inputnodename = self.tree.find('input').text
         inputnode = nodenetwork.getNode(inputnodename)
         # inputnode = nodes[inputnodename] #a POFieldNode object
-        for item in splits:
-           regex = item.find('regex').text
-           groups = item.findall('group')
+        if inputnode:
+            for item in splits:
+               regex = item.find('regex').text
+               groups = item.findall('group')
 
-           match = re.search(regex, inputnode.value)
-           for group in groups:
-               #make output nodes first
-               nodename = group.find('node').text
-               outnode = nodenetwork.getOrMakeNode(nodename)
-           if match:
-               #set the POFieldNode value to the specified group of the regex search
+               match = re.search(regex, inputnode.value)
                for group in groups:
+                   #make output nodes first
                    nodename = group.find('node').text
                    outnode = nodenetwork.getOrMakeNode(nodename)
-                   groupnumber = int(group.find('groupnumber').text) 
-                   try:
-                       outnode.value = match.group(groupnumber)
-                   except:
-                       pass
-               # print(match, match.group(0))
+               if match:
+                   #set the POFieldNode value to the specified group of the regex search
+                   for group in groups:
+                       nodename = group.find('node').text
+                       outnode = nodenetwork.getOrMakeNode(nodename)
+                       groupnumber = int(group.find('groupnumber').text) 
+                       try:
+                           outnode.value = match.group(groupnumber)
+                       except:
+                           pass
+                   # print(match, match.group(0))
 
-        for item in multisplits:
-           regex = item.find('regex').text
-           basenodename = item.find('node').text #node name template
-           try:
-               groupnumber = item.find('group').text
-           except AttributeError:
-               groupnumber = 0
-           else: 
-               groupnumber = int(groupnumber)
-           matchlist = re.findall(regex, inputnode.value)
-           if matchlist != []:
-               #set the POFieldNode value to the specified group of the regex search
-               for item in matchlist:
-                   #make specific node name from basenodename template
-                   newnodename = basenodename.replace('{}', item[1])
-                   outnode = nodenetwork.getOrMakeNode(newnodename)
-                   outnode.value = item[0]
-               # print(match, match.group(0))
+            for item in multisplits:
+               regex = item.find('regex').text
+               basenodename = item.find('node').text #node name template
+               try:
+                   groupnumber = item.find('group').text
+               except AttributeError:
+                   groupnumber = 0
+               else: 
+                   groupnumber = int(groupnumber)
+               matchlist = re.findall(regex, inputnode.value)
+               if matchlist != []:
+                   #set the POFieldNode value to the specified group of the regex search
+                   for item in matchlist:
+                       #make specific node name from basenodename template
+                       newnodename = basenodename.replace('{}', item[1])
+                       outnode = nodenetwork.getOrMakeNode(newnodename)
+                       outnode.value = item[0]
+                   # print(match, match.group(0))
 
     def matchAndTranslate(self, nodenetwork):
         inputs = self.tree.findall('input')
@@ -202,7 +203,11 @@ class ProcessorRule:
             for match in matches:
                 inp = match.attrib['input']
                 regex = match.text
-                inpdata = nodenetwork.getNode(inp).value
+                inpnode = nodenetwork.getNode(inp)
+                if inpnode:
+                    inpdata = inpnode.value
+                else:
+                    inpdata = None
                 if not inpdata:
                     inpdata = ''
                 if re.search(regex, inpdata): 
@@ -256,7 +261,12 @@ class PONodeNetwork:
             poitem.printAllNodes()
 
     def getNode(self, header):
-        return self.nodes[header]
+        node = None
+        try:
+            node = self.nodes[header]
+        except KeyError:
+            print("No such node, skipping: ", header)
+        return node
 
 class POItemNetwork:
     """ analogous to POItem in the scraper module - data struct. """ 
@@ -282,7 +292,12 @@ class POItemNetwork:
         self.nodes[ponode.header] = ponode
 
     def getNode(self, nodename):
-        return self.nodes[nodename]
+        node = None
+        try:
+            node = self.nodes[nodename]
+        except KeyError:
+            print("No such node, skipping: ", nodename)
+        return node
 
     def printAllNodes(self):
         outstring = ''

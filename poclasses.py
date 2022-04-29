@@ -251,6 +251,10 @@ class POItem:
                 if sizematch:
                     silencer_size = sizematch.group(1) + 'mmL'
                     size = match2.group(2) + '0'
+                    size = int(size)
+                    if size > 1200:
+                        size = int(size/10)
+                    size = str(size)
 
                 if match2.group(4):
                     if match2.group(4) == ' c/w Melinex':

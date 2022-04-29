@@ -31,6 +31,7 @@ class InputFieldParser:
             self.outputfield = outputfield.text
 
         for trigger in tree.findall('trigger'):
+            print(trigger.text)
             self.triggers.append(trigger)
         for cell in tree.findall('cell'):
             self.addCell(cell)
@@ -141,20 +142,23 @@ class InputFieldParser:
 
     def matchTrigger(self, string):
         """ checks every trigger and returns a boolean for match """ 
+        output = []
         for trigger in self.triggers:
             txt = trigger.text
+            # print(txt)
             trigtype = trigger.attrib['type']
             if trigtype == 'raw':
                 if txt == string:
-                    return True
+                    output.append(True)
                 else:
-                    return False
+                    output.append(False)
             elif trigtype == 'regex':
                 # print(txt, string)
                 if re.search(txt, str(string)):
-                   return True
+                   output.append(True)
                 else: 
-                    return False
+                   output.append(False)
+        return any(output)
 
     def getCells(self, tree,  data_rows, coordinateTuple):
         """
@@ -169,7 +173,10 @@ class InputFieldParser:
             xoffset = item[0]
             yoffset = item[1]
             # y first, then x. Just a quirk of how the spreadsheet is stored. 
-            targetcell = data_rows[ycoord+yoffset][xcoord+xoffset]
+            try:
+                targetcell = data_rows[ycoord+yoffset][xcoord+xoffset]
+            except:
+                targetcell = None
             if targetcell: 
                 # if more than one cell, assume everything is a string and concat. 
                 if len(self.cells) > 1: 
@@ -263,7 +270,9 @@ class TableParser:
         ycoord = coordinateTuple[1]
         numRows = len(self.rawtable)
         for rownum in range(ycoord+1, numRows-1):
+            # print(self.rawtable[rownum])
             if self.rawtable[rownum][0] != None:
+                # print('nonecell', self.rawtable[rownum][0])
                 rowNumbers.append(rownum)
             # Check the next row for empty space
             elif self.rawtable[rownum+1][0] == None:
@@ -279,7 +288,7 @@ class TableParser:
         xcoord = coordinateTuple[0]
         ycoord = coordinateTuple[1]
         numCols = len(self.rawtable[0])
-        for colnum in range(0, numCols - 1):
+        for colnum in range(0, numCols):
             header = self.rawtable[ycoord][colnum]
             if colnum == 0: #get the first column header and store as the item field title
                 itemHeader = header
@@ -306,6 +315,7 @@ class TableParser:
                 checkFlags = []
                 checkString = ''
                 field = POField(header, self.rawtable[row][column])
+                # print(header, '-->', self.rawtable[row][column])
                 for checkfunctree in self.checkfunctrees:
                     try:
                         headerregex = checkfunctree.find('header').text
@@ -333,11 +343,16 @@ class PO:
         self.items = [] 
         self.poitemlist = None
         self.filename = ''
+        self.ponumber = ''
         self.extracheckstrings = ''
 
     def addItem(self, item):
         if item.__class__.__name__ == 'POField':
             self.items.append(item)
+            if item.header == 'PO Number':
+                ponumber = item.value
+                ponumber = ponumber.replace(':', '').replace(' ', '')
+                self.ponumber = ponumber
         if item.__class__.__name__ == 'POItemList':
             self.poitemlist = item
         
@@ -354,8 +369,17 @@ class PO:
                     # poitem.printVal()
             # else:
                 # item.printVal()
-        self.poitemlist.printVal()
+        if self.poitemlist: 
+            self.poitemlist.printVal()
         print('Filename: ', self.filename)
+
+    def tempUploadFunc(self, remote_table):
+        ponumber = self
+        for item in self.poitemlist.poitems:
+            outputdict = item.createTempOutputDict()
+            outputdict['PO Number'] = self.ponumber
+            remote_table.create(outputdict)
+            print(outputdict)
 
     def summarizeCheckStrings(self):
         checkstrings = ''
@@ -432,6 +456,22 @@ class POItem:
         except:
             itemnumber = 'No Item Number'
         return itemnumber
+
+    def createTempOutputDict(self):
+        try:
+            # deldate = self.fields['Estimate'].getValString()
+            deldate = self.fields['date'].getValString()
+        except KeyError:
+            print("TEMP: valid date field not found")
+            deldate = None
+
+        itemno = self.fields['s/n'].getValString()
+        outdict = {}
+        if deldate != 'None':
+            outdict['PO Delivery Date'] = deldate
+        if itemno:
+            outdict['Item No.'] = itemno
+        return outdict
 
 class POField:
     """ 

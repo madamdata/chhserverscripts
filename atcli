@@ -1,15 +1,11 @@
 #!/usr/bin/python3
-import sys, os, pyairtable, re 
+import sys, os, pyairtable, re, datetime
 from columnar import columnar
 from dotenv import load_dotenv, dotenv_values
 from pyairtable.formulas import match
 from click import style
 import poclasses
 
-load_dotenv()
-key = os.environ['AIRTABLEKEY']
-baseid = os.environ['AIRTABLEBASEID']
-table = pyairtable.Table(key, baseid, 'Table 1')
 command = ""
 patterns = [
         ('.*:\ ?\d{4}-\d{2}-\d{2}', lambda text: style(text, bg='blue', fg='black', bold=True)),
@@ -19,8 +15,9 @@ patterns = [
 ]
 
 def printhelp():
-    print("No command given. Available commands:")
+    print("Available commands:")
     print("    atcli getpo <po number> <width of table>")
+    print("    atcli updatefab <po number> <po number> ...")
 
 def printitem(item):
     outputstring = ''
@@ -69,7 +66,13 @@ try:
     command = sys.argv[1] 
 except IndexError:
     printhelp()
-
+else:
+    if command != 'help':
+        load_dotenv()
+        print("Connecting to airtable...")
+        key = os.environ['AIRTABLEKEY']
+        baseid = os.environ['AIRTABLEBASEID']
+        table = pyairtable.Table(key, baseid, 'Table 1')
 
 if command == "getpo":
     try:
@@ -87,3 +90,23 @@ if command == "getpo":
     except IndexError: 
         print("No PO number specified. Please specify a PO number.")
 
+elif command == "updatefab":
+    which = sys.argv[2:]
+    for postr in which:
+        ponum = postr.split('-')[0]
+        itemnum = postr.split('-')[1]
+        formula = "IF(AND({PO Number}='%s', {Item No.}='%s'), 1, 0)" % (ponum, itemnum)
+        # formula = "IF({PO Number}='%s', 1, 0)" % (ponum)
+        records = table.all(formula = formula, fields = ['Fabrication Done?', 'PO Number ITEM'])
+        for item in records:
+            itemid = item['id']
+            fields = item['fields']
+            fields['Fabrication Done?'] = True
+            fields['Fabrication Date Done'] = datetime.datetime.now().strftime('%Y-%m-%d')
+            print(item['fields'])
+            fields.pop('PO Number ITEM')
+            table.update(itemid, fields)
+            # print(datetime.datetime.now())
+
+elif command == "help":
+    printhelp()
