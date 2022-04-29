@@ -17,7 +17,8 @@ patterns = [
 def printhelp():
     print("Available commands:")
     print("    atcli getpo <po number> <width of table>")
-    print("    atcli updatefab <po number> <po number> ...")
+    print("    atcli updatefab <po number>-<item number>+<qty> <po number>-<item number>+<qty> ...")
+    print("          for e.g. 'atcli updatefab L99998-A2+4 L99997-2+3'")
 
 def printitem(item):
     outputstring = ''
@@ -94,19 +95,41 @@ elif command == "updatefab":
     which = sys.argv[2:]
     for postr in which:
         ponum = postr.split('-')[0]
-        itemnum = postr.split('-')[1]
+        itemnumqty = postr.split('-')[1]
+        qty = itemnumqty.split('+')[1]
+        itemnum = itemnumqty.split('+')[0]
         formula = "IF(AND({PO Number}='%s', {Item No.}='%s'), 1, 0)" % (ponum, itemnum)
         # formula = "IF({PO Number}='%s', 1, 0)" % (ponum)
-        records = table.all(formula = formula, fields = ['Fabrication Done?', 'PO Number ITEM'])
+        records = table.all(formula = formula, fields = ['Fabrication Done?', 'PO Number ITEM', 'Completion Log', 'Qty Completed'])
         for item in records:
             itemid = item['id']
             fields = item['fields']
+            try:
+                qty_completed = int(fields['Qty Completed'])
+            except KeyError:
+                qty_completed = 0
+            
+            try:
+                completion_log = fields['Completion Log']
+            except KeyError:
+                completion_log = ''
+
+            datestring = datetime.datetime.now().strftime('%Y-%m-%d')
+            qty_completed = qty_completed + int(qty)
+
+            completion_log += datestring
+            completion_log += ' :  '
+            completion_log += str(qty)
+            completion_log += '\n'
+            print(qty_completed)
             fields['Fabrication Done?'] = True
+            fields['Qty Completed'] = qty_completed
+            fields['Completion Log'] = completion_log
             fields['Fabrication Date Done'] = datetime.datetime.now().strftime('%Y-%m-%d')
             print(item['fields'])
             fields.pop('PO Number ITEM')
             table.update(itemid, fields)
             # print(datetime.datetime.now())
 
-elif command == "help":
+elif command == "help" or command == "--help":
     printhelp()
