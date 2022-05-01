@@ -31,7 +31,7 @@ class InputFieldParser:
             self.outputfield = outputfield.text
 
         for trigger in tree.findall('trigger'):
-            print(trigger.text)
+            # print(trigger.text)
             self.triggers.append(trigger)
         for cell in tree.findall('cell'):
             self.addCell(cell)
@@ -105,13 +105,16 @@ class InputFieldParser:
         matches the input string against all triggers. If there is a match,  
         chooses an action to take based on the 'actiontype' variable
         and executes it. Returns either a POField or, in the case of a table,
-        a list of POItems (which contain POFields)
+        a list of POItems (which contain POFields), plus an extra check string. 
+        Extracheckstrings are the output of specialized check functions such as
+        checking for max # of triggers or checking if the PO matches the filename. 
         
         """
         output = None
         extracheckstrings = ''
         if self.matchTrigger(string):
             # check if this has been triggered more than the number of times specified
+            # and add a warning check string if it has
             self.timestriggered += 1
             if self.timestriggered > self.maxtriggers:
                 maxtrigchkstr = '{name}: triggered {times} times. Max triggers set to {maxtriggers}'.format(\
@@ -141,7 +144,9 @@ class InputFieldParser:
         return output, extracheckstrings
 
     def matchTrigger(self, string):
-        """ checks every trigger and returns a boolean for match """ 
+        """ checks every trigger and returns a boolean for match
+            called by matchAndDoAction()
+        """
         output = []
         for trigger in self.triggers:
             txt = trigger.text
@@ -165,6 +170,7 @@ class InputFieldParser:
         reads all the items in self.cells, and extracts the data from those cells,
         offset from the start cell (coordinateTuple).
         Returns a POField object and a blank extra check string.
+        Called by matchAndDoAction()
         """
         xcoord = coordinateTuple[0]
         ycoord = coordinateTuple[1]
@@ -192,6 +198,7 @@ class InputFieldParser:
         # create a POField with the proper header (self.outputfield) and value (output)
         field = POField(self.outputfield, output)
         self.runCheckFunctions(field)
+        # return <pofield>, <extracheckstrings>
         return field, ''
 
 
@@ -465,6 +472,13 @@ class POItem:
             print("TEMP: valid date field not found")
             deldate = None
 
+        try:
+            # deldate = self.fields['Estimate'].getValString()
+            deldate = self.fields['Date'].getValString()
+        except KeyError:
+            print("TEMP: valid date field not found")
+            deldate = None
+
         itemno = self.fields['s/n'].getValString()
         outdict = {}
         if deldate != 'None':
@@ -511,7 +525,10 @@ class POField:
 # ------------ misc global functions -------------
 
 def checkFunction(tree, pofield):
-    """ returns a tuple with a single checkFlag (bool) and a single checkstring (str) """ 
+    """ 
+        takes a <checkfunction> xml tree and a POField object. 
+        returns a tuple with a single checkFlag (bool) and a single checkstring (str)
+    """
     checktype = tree.attrib['type']
     checkif = getTreeText(tree, 'checkif', 'match').lower()
     # checkif - does the function set check flag if there's a match, or if there is no match?
@@ -543,15 +560,6 @@ def checkFunction(tree, pofield):
             else:
                 check = not checkif
 
-            # if check:
-                # outputstring = checkstring
-                # outputflag = True
-            # else: 
-                # outputstring = nocheckstring
-                # outputflag = False
-
-            # return (outputflag, outputstring)
-
     elif checktype == 'typecheck':
         typestring = tree.find('typename').text
         datatype = pofield.value.__class__.__name__
@@ -569,9 +577,6 @@ def checkFunction(tree, pofield):
         outputflag = False
         
     return outputflag, outputstring
-
-            # outputstring += ' '
-            
 
 
 def getTreeText(tree, fieldname, ifCantFind):

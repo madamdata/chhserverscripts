@@ -16,10 +16,10 @@ fi
 
 #find . -name "++*.xls" -exec pyexcel transcode {} {}.xlsx \; >> $SCRAPELOGFILE 2>&1
 #find . -name "++*.xls" -exec pyexcel transcode {} {}.xlsx \; >> $SCRAPELOGFILE 2>&1
-find . -name "++*.xlsx" -exec python3 ~/mail/chhserverscripts/2scraper.py {} wolter upload \; >> $SCRAPELOGFILE 2>&1
+find . -name "++*.xlsx" -exec sh -c "python3 ~/mail/chhserverscripts/2scraper.py -potype wolter -mode upload {}" \; >> $SCRAPELOGFILE 2>&1
 #find . -name "++*.xlsx" -exec python3 ~/mail/chhserverscripts/2scraper.py {} wolter upload \;
 
-for filename in ++*.[xX][lL][sS][xX];do mv $filename ${filename:2}; done
+for filename in ++*.[xX][lL][sS][xX];do echo $filename && mv $filename ${filename:2}; done
 #for filename in ++*.[xX][lL][sS];do mv $filename ${filename:2}; done
 
 

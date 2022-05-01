@@ -98,7 +98,7 @@ elif command == "updatefab":
         itemnumqty = postr.split('-')[1]
         qty = itemnumqty.split('+')[1]
         itemnum = itemnumqty.split('+')[0]
-        formula = "IF(AND({PO Number}='%s', {Item No.}='%s'), 1, 0)" % (ponum, itemnum)
+        formula = "IF(AND({PO Number Regex}='%s', {Item No.}='%s'), 1, 0)" % (ponum, itemnum)
         # formula = "IF({PO Number}='%s', 1, 0)" % (ponum)
         records = table.all(formula = formula, fields = ['Fabrication Done?', 'PO Number ITEM', 'Completion Log', 'Qty Completed'])
         for item in records:

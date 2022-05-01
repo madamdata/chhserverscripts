@@ -2,7 +2,7 @@
 
 import parser as poparser
 import processor as poprocessor
-import sys, os, pyairtable, logger
+import sys, os, pyairtable, logger, argparse
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv, dotenv_values
 from openpyxl import load_workbook
@@ -23,16 +23,21 @@ if __name__ == '__main__':
     remote_table = pyairtable.Table(key, baseid, 'Table 1')
 
     # read excel file
-    filepath = sys.argv[1]
-    try: 
-        potype = sys.argv[2]
-    except IndexError:
-        potype = 'rosenberg'
-    try: 
-        if sys.argv[3] == 'upload':
-            uploadflag = True
-    except IndexError:
-        uploadflag = False
+    argparser = argparse.ArgumentParser(description="Scraper v2.0")
+    argparser.add_argument('-potype')
+    argparser.add_argument('-mode')
+    argparser.add_argument('filepath')
+    args = argparser.parse_args()
+    print(args.filepath, args.potype)
+
+    filepath = args.filepath
+    mode = args.mode
+    potype = args.potype
+    uploadflag = False
+
+    if mode == 'upload':
+        uploadflag = True
+
     filename = os.path.basename(filepath)
     excelfile = load_workbook(filename = filepath, data_only=True)
     sheetnames = excelfile.sheetnames
@@ -95,7 +100,9 @@ if __name__ == '__main__':
     processortree = ET.parse('/home/chh/mail/chhserverscripts/rules-processor.xml')
     processor = poprocessor.POProcessor(processortree)
     nodenetwork = processor.parse(po)
-    nodenetwork.listNodes()
+    # nodenetwork.listNodes(nodenames = ['PO Number'])
+    # nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL'])
+    nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL', 'modelstringExtra'])
 
     print('-----------------------------\n')
 
