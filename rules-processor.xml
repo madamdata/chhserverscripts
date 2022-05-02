@@ -3,7 +3,6 @@
 	<globalrules>
 		<rule type="splitRegex">
 			<name>detailsplit</name> <!--it is very important that each rule have a unique name-->
-			<sequence>init</sequence><!--this means it doesn't have to be triggered by anything-->
 			<!--<nextrule>followtest</nextrule> [>the name of the next rule to apply if this one is triggered<]-->
 			<input>Detail Raw</input> <!--which node to get the data from--> 
 			<multisplit> <!--multisplit dynamically creates nodes based on multiple regex matches. eg (A), (B) etc-->
@@ -24,6 +23,19 @@
 					<node name="polefoo"></node>
 				</group>
 			</split>
+		</rule>
+
+		<rule type="simpleCopy">
+			<name>copyDetailRaw</name>
+			<input>Detail Raw</input>
+			<newnodename>Detail Raw</newnodename>
+		</rule>
+
+		<rule type="copyByRegex">
+			<name>copyDetailSplits</name>
+			<regex>split([A-Z])</regex>
+			<keyfield>ITEM</keyfield>
+			<newnodename>detailSplit</newnodename>
 		</rule>
 	</globalrules>
 
@@ -133,9 +145,13 @@
 			<!--<nextrule>foo</nextrule>-->
 			<input>modelstringItem</input>
 			<input>modelstringExtra</input>
+			<!--<translate>-->
+				<!--<match input='modelstringItem'>AND</match>-->
+				<!--<node name="modelstringItem">Ax</node>-->
+			<!--</translate>-->
 			<translate>
 				<match input='modelstringItem'>AND</match>
-				<node name="modelstringItem">Ax</node>
+				<node name="modelstringItem">Ax{modelstringSize}{ITEM}</node>
 			</translate>
 			<translate>
 				<match input='modelstringItem'>Ax</match>

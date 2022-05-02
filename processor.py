@@ -161,6 +161,58 @@ class ProcessorRule:
             newname = al.text
             nodenetwork.renameNode(name, newname)
 
+    def simpleCopy(self, nodenetwork):
+        """ copies a node from global to every child POItemNetwork """
+        inp = self.tree.find('input').text 
+        newnodename = self.tree.find('newnodename').text
+        inpnode = nodenetwork.getNode(inp)
+        if inpnode:
+            newnode = copy.copy(inpnode)
+            newnode.header = newnodename
+            for poitem in nodenetwork.poitems:
+                poitem.addNode(newnode)
+
+    def copyByRegex(self, nodenetwork):
+        """ GLOBAL ONLY - for copying splitA, splitB etc to individual items """
+        regex = self.tree.find('regex').text
+        # print(regex)
+        keyfield = self.tree.find('keyfield').text
+        newnodename = self.tree.find('newnodename').text
+        for header, node in nodenetwork.nodes.items():
+            # does the header of the global node match the regex?
+            match = re.match(regex, header)
+            if match:
+                group = match.group(1)
+                for poitem in nodenetwork.poitems:
+                    keynode = poitem.nodes[keyfield]
+                    if group in keynode.value:
+                        newnode = copy.deepcopy(node)
+                        newnode.header = newnodename
+                        print('copying ', keynode.value, newnode.value)
+                        poitem.addNode(newnode)
+            
+            
+
+    def substituteNodeValues(self, string, nodenetwork):
+        """
+        replaces {foo} in string with {value of node foo}
+        """
+        listOfReplacements = []
+        substitutions = re.findall(r'\{(.+?)\}', string)
+        for item in substitutions:
+            replacementText = ''
+            node = nodenetwork.getNode(item)
+            if node:
+                replacementText = node.value
+                # print(outval)
+                # print(replacementText)
+                # print(outvalTmpSub)
+            listOfReplacements.append(replacementText)
+        # print(listOfReplacements)
+        outstring = re.sub('\{.+?\}', '{}', string)
+        outstring = outstring.format(*listOfReplacements)
+        return outstring
+
     def matchAndTranslate(self, nodenetwork):
         """
             translates (modifies) a node's contents based on
@@ -170,11 +222,11 @@ class ProcessorRule:
         translations = self.tree.findall('translate')
         for tr in translations:
             matches = tr.findall('match')
-            outval = tr.find('node').text
             #### TO DO --> make it possible for multiple output nodes ###
             outnodename = tr.find('node').attrib['name']
             outnode = nodenetwork.getOrMakeNode(outnodename)
 
+            # Test for the presence of all matches
             matchTruth = []
             for match in matches:
                 inp = match.attrib['input']
@@ -193,6 +245,8 @@ class ProcessorRule:
                     matchTruth.append(False)
 
             if all(matchTruth): #if and only if all matches are True, output the specified value
+                outval = tr.find('node').text
+                outval = self.substituteNodeValues(outval, nodenetwork)
                 outnode.value = outval
 
     def splitRegex(self, nodenetwork):
@@ -299,6 +353,14 @@ class PONodeNetwork:
             self.addNode(newnode)
             return newnode
 
+    def getAllNodesByRegex(self, nameregex):
+        nodes = []
+        for header, node in self.nodes.items():
+            if re.match(nameregex, header):
+                nodes.append(node)
+        return nodes
+
+            
 
     def listNodes(self, **kwargs):
         # currently called manually in the main script
