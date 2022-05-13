@@ -295,6 +295,7 @@ class TableParser:
         xcoord = coordinateTuple[0]
         ycoord = coordinateTuple[1]
         numCols = len(self.rawtable[0])
+        print('numcols ', numCols)
         for colnum in range(0, numCols):
             header = self.rawtable[ycoord][colnum]
             if colnum == 0: #get the first column header and store as the item field title
@@ -348,6 +349,7 @@ class TableParser:
 class PO:
     def __init__(self):
         self.items = [] 
+        self.globalitems = {}
         self.poitemlist = None
         self.filename = ''
         self.ponumber = ''
@@ -356,6 +358,7 @@ class PO:
     def addItem(self, item):
         if item.__class__.__name__ == 'POField':
             self.items.append(item)
+            self.globalitems[item.header] = item
             if item.header == 'PO Number':
                 ponumber = item.value
                 ponumber = ponumber.replace(':', '').replace(' ', '')
@@ -383,7 +386,7 @@ class PO:
     def tempUploadFunc(self, remote_table):
         ponumber = self
         for item in self.poitemlist.poitems:
-            outputdict = item.createTempOutputDict()
+            outputdict = item.createTempOutputDict(self.globalitems)
             outputdict['PO Number'] = self.ponumber
             remote_table.create(outputdict)
             print(outputdict)
@@ -464,7 +467,8 @@ class POItem:
             itemnumber = 'No Item Number'
         return itemnumber
 
-    def createTempOutputDict(self):
+    def createTempOutputDict(self, globalfieldsdict):
+
         try:
             # deldate = self.fields['Estimate'].getValString()
             deldate = self.fields['date'].getValString()
@@ -474,10 +478,17 @@ class POItem:
 
         try:
             # deldate = self.fields['Estimate'].getValString()
-            deldate = self.fields['Date'].getValString()
+            deldate = self.fields['Targeted Date'].getValString()
         except KeyError:
             print("TEMP: valid date field not found")
             deldate = None
+
+        try:
+            deldate = globalfieldsdict['deliverydate']
+        except KeyError:
+            print("TEMP: no global delivery date")
+            deldate = None
+
 
         itemno = self.fields['s/n'].getValString()
         outdict = {}

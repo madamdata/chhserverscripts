@@ -67,6 +67,7 @@ if __name__ == '__main__':
                     # codes += '.'
                 # print(rowvals[0], codes)
             # print(rowvals)
+            # print(len(newrowvals))
             data_rows.append(newrowvals)
         sheetdata.append(data_rows)
 
