@@ -68,7 +68,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>^(RS|RSM)[ -]([0-9]+)(-[\d.]+[dDL])(.*)?</regex>
+				<regex>^(RS|RSM)[ -]([0-9]+)(-([\d.]+)[dDL])(.*)?</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
 				</group>
@@ -79,6 +79,9 @@
 					<node name="modelstringSilencerSize"></node>
 				</group>
 				<group number='4'>					
+					<node name="modelstringSilencerNumOnly"></node>
+				</group>
+				<group number='5'>					
 					<node name="modelstringRSExtra"></node>
 				</group>
 			</split>
@@ -145,14 +148,14 @@
 			<!--<nextrule>foo</nextrule>-->
 			<input>modelstringItem</input>
 			<input>modelstringExtra</input>
-			<!--<translate>-->
-				<!--<match input='modelstringItem'>AND</match>-->
-				<!--<node name="modelstringItem">Ax</node>-->
-			<!--</translate>-->
 			<translate>
 				<match input='modelstringItem'>AND</match>
-				<node name="modelstringItem">Ax{modelstringSize}{ITEM}</node>
+				<node name="modelstringItem">Ax</node>
 			</translate>
+			<!--<translate>-->
+				<!--<match input='modelstringItem'>AND</match>-->
+				<!--<node name="modelstringItem">Ax{modelstringSize}{ITEM}</node>-->
+			<!--</translate>-->
 			<translate>
 				<match input='modelstringItem'>Ax</match>
 				<match input='modelstringExtra'>-Ex</match>
@@ -166,6 +169,13 @@
 				<match input='modelstringItem'>Bif</match>
 				<match input='modelstringExtra'>-T</match>
 				<node name="modelstringItem">Bif T/p</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>(RS|RSM)</match>
+				<node name="motorSize">-</node>
+				<node name="motorClass">-</node>
+				<node name="motorBrand">-</node>
+				<node name="motorSpeed">-</node>
 			</translate>
 			<translate>
 				<match input='modelstringItem'>RV</match>
@@ -196,6 +206,8 @@
 		<rule type="matchAndTranslate">
 			<name>translateSilencerSize</name>
 			<input>modelstringSilencerSize</input>
+			<input>modelstringSilencerNumOnly</input>
+			<input>modelstringItem</input>
 			<translate>
 				<match input='modelstringSilencerSize'>-4W c/w Aluminium Capacitor</match>
 				<node name='modelstringSilencerSize'>-4 c/w AL</node>
@@ -204,12 +216,34 @@
 				<match input='modelstringSilencerSize'>-4 EX</match>
 				<node name='modelstringSilencerSize'>-4-EX</node>
 			</translate>
+			<translate>
+				<match input='modelstringSilencerSize'>(-[0-9]+)L</match>
+				<match input='modelstringItem'>(RS|RSM)</match>
+				<node name='modelstringSilencerSize'>{modelstringSilencerNumOnly}mmL</node>
+			</translate>
 		</rule>
 
 		<rule type="matchAndTranslate">
 			<name>translateRSSilencer</name>
 			<input>modelstringRSExtra</input>
 			<input>modelstringSilencerSize</input>
+		</rule>
+		<rule type="matchAndTranslate">
+			<name>motorSizeFloat</name>
+			<input>motorSize</input>
+			<translate>
+				<match input='motorSize'>4</match>
+				<node name='motorSize'>4.0</node>
+			</translate>
+			<translate>
+				<match input='motorSize'>3</match>
+				<node name='motorSize'>3.0</node>
+			</translate>
+		</rule>
+		<rule type='mathx10'>
+			<name>multRSSize</name>
+			<input>modelstringRSSize</input>
+			<node name='modelstringSize'></node>
 		</rule>
 	</itemrules>
 </processor-rules>

@@ -102,9 +102,10 @@ if __name__ == '__main__':
     processor = poprocessor.POProcessor(processortree)
     nodenetwork = processor.parse(po)
     # nodenetwork.listNodes(nodenames = ['PO Number'])
+    nodenetwork.listNodes()
     # nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'splitA', 'modelstringItem', 'MODEL', 'modelstringExtra'])
-    nodenetwork.listNodes(nodenames=['ITEM', 'detailSplit'])
+    # nodenetwork.listNodes(nodenames=['ITEM', 'detailSplit'])
 
     print('-----------------------------\n')
 

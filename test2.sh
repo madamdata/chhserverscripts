@@ -50,10 +50,15 @@ then
 	SEARCHPATH='/home/chh/mail/attachments/wolter'
 fi 
 
-if [[ -n MTIME ]]
+if [[ -n $MTIME ]]
 then
+	echo $MTIME
 	find $SEARCHPATH -name '*.xlsx' -mtime "-$MTIME" -exec sh -c "2scraper.py -mode dryrun -potype $POTYPE '{}' && read -p 'continue?' -n 1" \;
 fi
 
-
+if [[ -n $PONUMBER ]]
+then
+	echo '*$PONUMBER*.xlsx'
+	find $SEARCHPATH -name "*$PONUMBER*.xlsx" -exec sh -c "2scraper.py -mode dryrun -potype $POTYPE '{}' && read -p 'continue?' -n 1" \;
+fi
 

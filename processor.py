@@ -196,6 +196,7 @@ class ProcessorRule:
     def substituteNodeValues(self, string, nodenetwork):
         """
         replaces {foo} in string with {value of node foo}
+        called in matchAndTranslate
         """
         listOfReplacements = []
         substitutions = re.findall(r'\{(.+?)\}', string)
@@ -213,6 +214,21 @@ class ProcessorRule:
         outstring = outstring.format(*listOfReplacements)
         return outstring
 
+    def mathx10(self, nodenetwork):
+        """ multiplies by 10 """
+        inp = self.tree.find('input').text
+        inpnode = nodenetwork.getNode(inp)
+        # print(inpnode)
+        out = self.tree.find('node').attrib['name']
+        outnode = nodenetwork.getOrMakeNode(out)
+        if inpnode: 
+            try:
+                outval = float(inpnode.value) * 10 
+            except ValueError:
+                print('input not a number: ', inp)
+            outval = int(outval)
+            outnode.value = outval
+
     def matchAndTranslate(self, nodenetwork):
         """
             translates (modifies) a node's contents based on
@@ -223,8 +239,9 @@ class ProcessorRule:
         for tr in translations:
             matches = tr.findall('match')
             #### TO DO --> make it possible for multiple output nodes ###
-            outnodename = tr.find('node').attrib['name']
-            outnode = nodenetwork.getOrMakeNode(outnodename)
+            outnodetrees = tr.findall('node')
+            outnodes = []
+            # outnode = nodenetwork.getOrMakeNode(outnodename)
 
             # Test for the presence of all matches
             matchTruth = []
@@ -245,9 +262,12 @@ class ProcessorRule:
                     matchTruth.append(False)
 
             if all(matchTruth): #if and only if all matches are True, output the specified value
-                outval = tr.find('node').text
-                outval = self.substituteNodeValues(outval, nodenetwork)
-                outnode.value = outval
+                for tree in outnodetrees:
+                    nodename = tree.attrib['name']
+                    node = nodenetwork.getOrMakeNode(nodename)
+                    outval = tree.text
+                    outval = self.substituteNodeValues(outval, nodenetwork) #sub in values of any other nodes in {curly braces}
+                    node.value = outval
 
     def splitRegex(self, nodenetwork):
         """ 
@@ -425,6 +445,7 @@ class POItemNetwork:
         for header, node in self.nodes.items():
             if (header in nodenames) or (nodenames == []) or ('allitems' in nodenames):
                 outstring += node.getPrintString()
+        outstring = outstring.replace('\n', '@nl')
         print(outstring)
 
     @classmethod
