@@ -12,6 +12,7 @@
 		<field type="Document level">
 			<name>issuedate</name>
 			<trigger type='raw'>Date</trigger>
+			<trigger type='raw'>DATE</trigger>
 			<maxtriggers>1</maxtriggers>
 			<cell>1, 0</cell>
 			<outputfield>PO Date</outputfield>

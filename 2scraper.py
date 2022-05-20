@@ -21,11 +21,12 @@ if __name__ == '__main__':
     key = os.environ['AIRTABLEKEY']
     baseid = os.environ['AIRTABLEBASEID']
     remote_table = pyairtable.Table(key, baseid, 'Table 1')
+    test_table = pyairtable.Table(key, baseid, 'test table')
 
     # read excel file
     argparser = argparse.ArgumentParser(description="Scraper v2.0")
     argparser.add_argument('-potype')
-    argparser.add_argument('-mode')
+    argparser.add_argument('-mode', nargs='?', const='dryrun')
     argparser.add_argument('filepath')
     args = argparser.parse_args()
     print(args.filepath, args.potype)
@@ -34,9 +35,13 @@ if __name__ == '__main__':
     mode = args.mode
     potype = args.potype
     uploadflag = False
+    testupload = False
 
     if mode == 'upload':
         uploadflag = True
+
+    if mode == 'testupload':
+        testupload = True
 
     filename = os.path.basename(filepath)
     excelfile = load_workbook(filename = filepath, data_only=True)
@@ -101,8 +106,10 @@ if __name__ == '__main__':
     processortree = ET.parse('/home/chh/mail/chhserverscripts/rules-processor.xml')
     processor = poprocessor.POProcessor(processortree)
     nodenetwork = processor.parse(po)
-    # nodenetwork.listNodes(nodenames = ['PO Number'])
-    nodenetwork.listNodes()
+    # nodenetwork.listNodes()
+    if testupload:
+        processor.upload('upload group 1', test_table)
+    # nodenetwork.listNodes(nodenames = ['PO Date', 'PO Delivery Date'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'splitA', 'modelstringItem', 'MODEL', 'modelstringExtra'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'detailSplit'])
@@ -112,3 +119,4 @@ if __name__ == '__main__':
 
     if uploadflag:
         po.tempUploadFunc(remote_table)
+

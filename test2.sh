@@ -5,6 +5,7 @@ POTYPE=""
 PONUMBER=""
 HELP=""
 SEARCHPATH=""
+MODE=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -15,6 +16,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -t|--potype)
       POTYPE="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -o|--mode)
+      MODE="$2"
       shift # past argument
       shift # past value
       ;;
@@ -36,7 +42,7 @@ done
 
 if [[ -n HELP ]]
 then
-	echo "-m <days past> -t <rosenberg|wolter>"
+	echo "-m <days past> -t <rosenberg|wolter> -o <dryrun|testupload>"
 fi
 
 if [[ $POTYPE = rosenberg ]]
@@ -53,12 +59,12 @@ fi
 if [[ -n $MTIME ]]
 then
 	echo $MTIME
-	find $SEARCHPATH -name '*.xlsx' -mtime "-$MTIME" -exec sh -c "2scraper.py -mode dryrun -potype $POTYPE '{}' && read -p 'continue?' -n 1" \;
+	find $SEARCHPATH -name '*.xlsx' -mtime "-$MTIME" -exec sh -c "2scraper.py -mode $MODE -potype $POTYPE '{}' && read -p 'continue?' -n 1" \;
 fi
 
 if [[ -n $PONUMBER ]]
 then
 	echo '*$PONUMBER*.xlsx'
-	find $SEARCHPATH -name "*$PONUMBER*.xlsx" -exec sh -c "2scraper.py -mode dryrun -potype $POTYPE '{}' && read -p 'continue?' -n 1" \;
+	find $SEARCHPATH -name "*$PONUMBER*.xlsx" -exec sh -c "2scraper.py -mode $MODE -potype $POTYPE '{}' && read -p 'continue?' -n 1" \;
 fi
 

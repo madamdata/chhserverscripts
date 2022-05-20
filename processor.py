@@ -1,5 +1,5 @@
 import parser as poparser
-import re, os, sys, copy
+import re, os, sys, copy, pyairtable, datetime
 
 
 class POProcessor:
@@ -8,6 +8,7 @@ class POProcessor:
         # all the rules
         self.globalrules = {}
         self.itemrules = {}
+        self.checkrules = {}
         # dictionaries to store refs to the rules that will be called first, without being pointed to
         self.globalinitrules = {}
         self.iteminitrules = {}
@@ -25,6 +26,10 @@ class POProcessor:
         for ruletree in itemruletree.findall('rule'):
             self.addItemRule(ProcessorRule(ruletree, 'item'))
 
+        checkruletree = tree.find('checkrules')
+        for ruletree in checkruletree.findall('rule'):
+            self.addCheckRule(ProcessorRule(ruletree, 'item'))
+
     def addGlobalRule(self, rule):
         self.globalrules[rule.name] = rule
         if rule.sequence == 'init':
@@ -34,6 +39,9 @@ class POProcessor:
         self.itemrules[rule.name] = rule
         if rule.sequence == 'init':
             self.iteminitrules[rule.name] = rule
+
+    def addCheckRule(self, rule):
+        self.checkrules[rule.name] = rule
 
     def getGlobalRule(self, rulename):
         return self.globalrules[rulename]
@@ -53,31 +61,55 @@ class POProcessor:
             newnetwork = POItemNetwork.fromPOItem(poitem)
             self.nodenetwork.addpoitem(newnetwork)
 
-            
-        # Apply global rules, then individual item rules
-        # for header, rule in self.globalinitrules.items():
-            # nextrulename = rule.applyRule(self.nodenetwork)
-            # while nextrulename != None:
-                # nextrule = self.globalrules[nextrulename]
-                # nextrulename = nextrule.applyRule(self.nodenetwork)
         for header, rule in self.globalrules.items():
             rule.applyRule(self.nodenetwork)
-
                 
-        # for header, rule in self.iteminitrules.items():
-            # nextrulename = rule.applyRule(self.nodenetwork)
-            # while nextrulename != None:
-                # try:
-                    # nextrule = self.itemrules[nextrulename]
-                # except KeyError:
-                    # print("Next rule not found: ", nextrulename)
-                    # break
-
-                # nextrulename = nextrule.applyRule(self.nodenetwork)
         for header, rule in self.itemrules.items():
             rule.applyRule(self.nodenetwork)
         
         return self.nodenetwork
+
+    def upload(self, uploadrulename, remote_table):
+        # print(self.checkrules) 
+        try:
+            uploadrule = self.checkrules[uploadrulename]
+        except KeyError:
+            print('No upload rule found by that name: ', uploadrulename)
+            return None
+        nodetrees = uploadrule.tree.findall('node') 
+        for poitem in self.nodenetwork.poitems:
+            nodes = {}
+            for tr in nodetrees:
+                val = poitem.getOutputValue(tr.attrib['name']) #returns node value or None
+                try:
+                    valtype = tr.attrib['type']
+                except KeyError:
+                    valtype = None
+                # if a field name is specified in the xml, use that, otherwise use node name
+                header = tr.text
+                if header == None:
+                    header = tr.attrib['name']
+                # check types
+                if val:
+                    if valtype == 'string':
+                        val = str(val)
+                    if valtype == 'int':
+                        val = int(val)
+                    if valtype == 'datetime':
+                        # if it's supposed to be datetime and it's not, don't upload
+                        if val.__class__.__name__ != 'datetime':
+                            val = None
+                        else:
+                            val = val.strftime('%Y-%m-%d')
+                    nodes[header] = val
+            print(nodes)
+            remote_table.create(nodes)
+
+        # nodes = []
+        # for tr in nodetrees:
+            
+        
+
 
 class ProcessorRule:
     """ class for parsing and executing individual rule """ 
@@ -161,6 +193,27 @@ class ProcessorRule:
             newname = al.text
             nodenetwork.renameNode(name, newname)
 
+    def coerceDate(self, nodenetwork):
+        """ tries to get whatever fubar date format provided by the client into
+        something recognizable, usually a datetime object """ 
+        inp = self.tree.find('input').text
+        inpnode = nodenetwork.getNode(inp)
+        if inpnode:
+            val = inpnode.value
+            try: 
+                val = datetime.datetime.strptime(val, '%d/%m/%Y')
+            except ValueError: #if it's some other unrecognizable fubar string
+                pass
+            except TypeError: #if it's actually a datetime object already
+                pass
+            try: 
+                val = datetime.datetime.strptime(val, '%Y-%m-%d')
+            except ValueError:
+                pass
+            except TypeError:
+                pass
+            inpnode.value = val
+
     def simpleCopy(self, nodenetwork):
         """ copies a node from global to every child POItemNetwork """
         inp = self.tree.find('input').text 
@@ -214,8 +267,9 @@ class ProcessorRule:
         outstring = outstring.format(*listOfReplacements)
         return outstring
 
-    def mathx10(self, nodenetwork):
-        """ multiplies by 10 """
+    def mathx10RS(self, nodenetwork):
+        """ multiplies by 10. unless the result is more than 1350.
+            for bizarre RS model strings with inconsistent sizing"""
         inp = self.tree.find('input').text
         inpnode = nodenetwork.getNode(inp)
         # print(inpnode)
@@ -224,6 +278,8 @@ class ProcessorRule:
         if inpnode: 
             try:
                 outval = float(inpnode.value) * 10 
+                if outval > 1350:
+                    outval = outval/10
             except ValueError:
                 print('input not a number: ', inp)
             outval = int(outval)
@@ -282,13 +338,15 @@ class ProcessorRule:
         # inputnode = nodes[inputnodename] #a POFieldNode object
         if inputnode:
             for item in splits:
-               regex = item.find('regex').text
+               regex = item.find('regex').text 
                groups = item.findall('group')
+               try: 
+                   match = re.search(regex, inputnode.value)
+               except TypeError: #inputnode.value is not a string - probably a datetime
+                   #print('Splitregex: node value is not a string and cannot be regexed.')
+                   match = False
+                   pass
 
-               match = re.search(regex, inputnode.value)
-               # for group in groups:
-                   # nodename = group.find('node').attrib['name']
-                   # outnode = nodenetwork.getOrMakeNode(nodename)
                if match:
                    #set the POFieldNode value to the specified group of the regex search
                    #make output nodes first
@@ -396,6 +454,7 @@ class PONodeNetwork:
 
         for poitem in self.poitems:
             poitem.printNodes(nodenames)
+    
 
 
 class POItemNetwork:
@@ -418,6 +477,13 @@ class POItemNetwork:
             # print("No such node, skipping: ", nodename)
             pass
         return node
+
+    def getOutputValue(self, nodename):
+        node = self.getNode(nodename)
+        output = None
+        if node:
+            output = node.value
+        return output
 
     def renameNode(self, nodename, newnodename):
         try:

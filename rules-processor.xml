@@ -17,18 +17,61 @@
 					<node name="motorBrand"></node>
 				</group>
 			</split>
+		</rule>
+
+		<rule type="splitRegex">
+			<name>deliveryDateSplit</name>
+			<input>Delivery Date</input>
 			<split>
-				<regex>([0-9] Pole)</regex>
+				<regex>(.*)</regex>
 				<group number='1'>
-					<node name="polefoo"></node>
+					<node name='deliveryDateRaw'></node>
 				</group>
 			</split>
+			<split>
+				<regex>([0-9]+\/[0-9]+\/[0-9]+)</regex>
+				<group number='1'>
+					<node name='Delivery Date'></node>
+				</group>
+			</split>
+		</rule>
+
+		<rule type="coerceDate">
+			<name>coerceIssueDate</name>
+			<input>PO Date</input>
+		</rule>
+		<rule type="coerceDate">
+			<name>coerceDeliveryDate</name>
+			<input>Delivery Date</input>
+		</rule>
+
+		<rule type="simpleCopy">
+			<name>copyPONum</name>
+			<input>PO Number</input>
+			<newnodename>PO Number</newnodename>
+		</rule>
+
+		<rule type="simpleCopy">
+			<name>copyPODate</name>
+			<input>PO Date</input>
+			<newnodename>PO Date</newnodename>
 		</rule>
 
 		<rule type="simpleCopy">
 			<name>copyDetailRaw</name>
 			<input>Detail Raw</input>
 			<newnodename>Detail Raw</newnodename>
+		</rule>
+
+		<rule type="simpleCopy">
+			<name>copyDeliveryDate</name>
+			<input>Delivery Date</input>
+			<newnodename>PO Delivery Date</newnodename>
+		</rule>
+		<rule type="simpleCopy">
+			<name>copyDeliveryDateRaw</name>
+			<input>deliveryDateRaw</input>
+			<newnodename>Delivery Date Raw</newnodename>
 		</rule>
 
 		<rule type="copyByRegex">
@@ -49,8 +92,6 @@
 
 		<rule type="splitRegex">
 			<name>modelstring</name>
-			<sequence>init</sequence> <!--this means it doesn't have to be triggered by anything-->
-			<nextrule>translatemodelstringItem</nextrule>
 			<input>MODEL</input>
 			<split>
 				<regex>^(BIF|AND|RV|DQ|Matching Flanges|Mounting Feet)(-Ex|-GVD|-CR|-T)?</regex>
@@ -240,10 +281,31 @@
 				<node name='motorSize'>3.0</node>
 			</translate>
 		</rule>
-		<rule type='mathx10'>
+		<rule type='mathx10RS'>
 			<name>multRSSize</name>
 			<input>modelstringRSSize</input>
 			<node name='modelstringSize'></node>
 		</rule>
 	</itemrules>
+	<checkrules>
+		<rule type='uploadnodes'>
+			<name>upload group 1</name>
+			<node name='PO Number'>PO Number</node>
+			<node name='PO Date' type='datetime'></node>
+			<node name='PO Delivery Date' type='datetime'></node>
+			<node name='ITEM' type='string'>Item No.</node>
+			<node name='QTY' type='int'>Qty</node>
+			<node name='MODEL'>Item Raw</node>
+			<node name='Detail Raw'></node>
+			<node name='detailSplit'>Detail Raw</node>
+			<node name='modelstringItem'>Item</node>
+			<node name='modelstringSize' type='string'>Size</node>
+			<node name='modelstringSilencerSize'>Silencer Size</node>
+			<node name='modelstringImpeller'>Impeller</node>
+			<node name='motorSize'>Motor Size</node>
+			<node name='motorClass'>Motor Class</node>
+			<node name='motorBrand'>Motor Brand</node>
+			<node name='motorSpeed'>Motor Speed</node>
+		</rule>
+	</checkrules>
 </processor-rules>
