@@ -110,6 +110,7 @@ if __name__ == '__main__':
     if testupload:
         processor.upload('upload group 1', test_table)
     # nodenetwork.listNodes(nodenames = ['PO Date', 'PO Delivery Date'])
+    nodenetwork.listNodes(nodenames = ['Note Raw', 'bracket1st', 'bracket2nd', 'F/B (scraped)'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'splitA', 'modelstringItem', 'MODEL', 'modelstringExtra'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'detailSplit'])

@@ -36,6 +36,26 @@
 			</split>
 		</rule>
 
+		<rule type="splitRegex">
+			<name>NoteSplit</name>
+			<input>Note Raw</input>
+			<split>
+				<regex>.*holding\s*brackets\s*\((\d+)"\s*x\s*(\d+)"\).*</regex>
+				<group number='1'>
+					<node name='bracket1st'></node>
+				</group>
+				<group number='2'>
+					<node name='bracket2nd'></node>
+				</group>
+			</split>
+			<split>
+				<regex>([0-9]+\/[0-9]+\/[0-9]+)</regex>
+				<group number='1'>
+					<node name='Delivery Date'></node>
+				</group>
+			</split>
+		</rule>
+
 		<rule type="coerceDate">
 			<name>coerceIssueDate</name>
 			<input>PO Date</input>
@@ -45,39 +65,49 @@
 			<input>Delivery Date</input>
 		</rule>
 
-		<rule type="simpleCopy">
+		<rule type="copyToItems">
 			<name>copyPONum</name>
 			<input>PO Number</input>
 			<newnodename>PO Number</newnodename>
 		</rule>
 
-		<rule type="simpleCopy">
+		<rule type="copyToItems">
 			<name>copyPODate</name>
 			<input>PO Date</input>
 			<newnodename>PO Date</newnodename>
 		</rule>
 
-		<rule type="simpleCopy">
+		<rule type="copyToItems">
 			<name>copyDetailRaw</name>
 			<input>Detail Raw</input>
 			<newnodename>Detail Raw</newnodename>
 		</rule>
 
-		<rule type="simpleCopy">
+		<rule type="copyToItems">
 			<name>copyDeliveryDate</name>
 			<input>Delivery Date</input>
 			<newnodename>PO Delivery Date</newnodename>
 		</rule>
-		<rule type="simpleCopy">
+		<rule type="copyToItems">
 			<name>copyDeliveryDateRaw</name>
 			<input>deliveryDateRaw</input>
 			<newnodename>Delivery Date Raw</newnodename>
 		</rule>
+		<rule type="copyToItems">
+			<name>copyBracket1</name>
+			<input>bracket1st</input>
+			<newnodename>bracket1st</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyBracket2</name>
+			<input>bracket2nd</input>
+			<newnodename>bracket2nd</newnodename>
+		</rule>
 
 		<rule type="copyByRegex">
 			<name>copyDetailSplits</name>
-			<regex>split([A-Z])</regex>
-			<keyfield>ITEM</keyfield>
+			<regex>split([A-Z])</regex><!-- look for this node in the network-->
+			<keyfield>ITEM</keyfield><!-- copy to anything that contains group(1) from the above regex in this field-->
 			<newnodename>detailSplit</newnodename>
 		</rule>
 	</globalrules>
@@ -88,6 +118,16 @@
 		<rule type="alias">
 			<name>renameFields</name>
 			<alias name="Model / Description">MODEL</alias>
+			<alias name="CLASS">t_motor_class</alias>
+		</rule>
+
+		<rule type="copyNode">
+			<name>copyDetailRawCond</name>
+			<condition type='nodeDoesNotExist'>
+				<node name='detailSplit'></node>
+			</condition>
+			<input>Detail Raw</input>
+			<newnodename>detailSplit</newnodename>
 		</rule>
 
 		<rule type="splitRegex">
@@ -183,6 +223,47 @@
 			<!--<regex input='MODEL'>^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? ? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$</regex>-->
 		</rule>
 
+		<rule type="splitRegex">
+			<name>detailSplitRule</name>
+			<input>detailSplit</input>
+			<split>
+				<regex>Class ([A-Z])</regex>
+				<group number='1'>
+					<node name='t_motor_class'></node>
+				</group>
+			</split>
+			<split>
+				<regex>(Teco|Att|AEG) Motor</regex>
+				<group number='1'>
+					<node name='motorBrand'></node>
+				</group>
+			</split>
+			<split>
+				<regex>(2|4|2\/4) Pole</regex>
+				<group number='1'>
+					<node name='t_motor_poles'></node>
+				</group>
+			</split>
+			<split>
+				<regex>([0-9]+)v\/</regex>
+				<group number='1'>
+					<node name='t_motor_voltage'></node>
+				</group>
+			</split>
+			<split>
+				<regex>(V|B) Series</regex>
+				<group number='1'>
+					<node name='t_motor_class_series'></node>
+				</group>
+			</split>
+			<split>
+				<regex>112M</regex>
+				<group number='1'>
+					<node name='Motor Frame (Scraped)'></node>
+				</group>
+			</split>
+		</rule>
+
 
 		<rule type="matchAndTranslate">
 			<name>translatemodelstringItem</name>
@@ -241,7 +322,20 @@
 		</rule>
 
 		<rule type="matchAndTranslate">
-			<name>translateSingleDetailString</name>
+			<name>translatePoles</name>
+			<input>t_motor_poles</input>
+			<translate>
+				<match input='t_motor_poles'>2</match>
+				<node name='motorSpeed'>2880</node>
+			</translate>
+			<translate>
+				<match input='t_motor_poles'>4</match>
+				<node name='motorSpeed'>1440</node>
+			</translate>
+			<translate>
+				<match input='t_motor_poles'>2\/4</match>
+				<node name='motorSpeed'>2880/1440</node>
+			</translate>
 		</rule>
 
 		<rule type="matchAndTranslate">
@@ -270,6 +364,27 @@
 			<input>modelstringSilencerSize</input>
 		</rule>
 		<rule type="matchAndTranslate">
+			<name>translateMotorClass</name>
+			<input>t_motor_class</input>
+			<input>t_motor_class_series</input>
+			<translate>
+				<match input='t_motor_class'>[A-Z]</match>
+				<node name='motorClass'>Class {t_motor_class}</node>
+			</translate>
+			<translate>
+				<match input='t_motor_class_series'>[A-Z]</match>
+				<node name='motorClass'>{motorClass} ({t_motor_class_series})</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate">
+			<name>translateMotorVoltage</name>
+			<input>t_motor_voltage</input>
+			<translate>
+				<match input='t_motor_voltage'>[0-9]+</match>
+				<node name='motorVoltage'>{t_motor_voltage}V</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate">
 			<name>motorSizeFloat</name>
 			<input>motorSize</input>
 			<translate>
@@ -279,6 +394,16 @@
 			<translate>
 				<match input='motorSize'>3</match>
 				<node name='motorSize'>3.0</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate">
+			<name>holdingBrackets</name>
+			<input>bracket1st</input>
+			<input>bracket2nd</input>
+			<translate>
+				<match input='bracket1st'>[0-9]+</match>
+				<match input='bracket2nd'>[0-9]+</match>
+				<node name='F/B (scraped)'>F/B {bracket1st}in x {bracket2nd}in</node>
 			</translate>
 		</rule>
 		<rule type='mathx10RS'>
@@ -296,7 +421,7 @@
 			<node name='ITEM' type='string'>Item No.</node>
 			<node name='QTY' type='int'>Qty</node>
 			<node name='MODEL'>Item Raw</node>
-			<node name='Detail Raw'></node>
+			<!--<node name='Detail Raw'></node>-->
 			<node name='detailSplit'>Detail Raw</node>
 			<node name='modelstringItem'>Item</node>
 			<node name='modelstringSize' type='string'>Size</node>
@@ -306,6 +431,9 @@
 			<node name='motorClass'>Motor Class</node>
 			<node name='motorBrand'>Motor Brand</node>
 			<node name='motorSpeed'>Motor Speed</node>
+			<node name='motorVoltage'>Motor Voltage</node>
+			<node name='F/B (scraped)'></node>
+			<node name='Motor Frame (Scraped)'></node>
 		</rule>
 	</checkrules>
 </processor-rules>

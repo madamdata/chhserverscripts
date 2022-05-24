@@ -42,7 +42,7 @@ done
 
 if [[ -n HELP ]]
 then
-	echo "-m <days past> -t <rosenberg|wolter> -o <dryrun|testupload>"
+	echo "[-m <days past> OR -n <po number>] -t <rosenberg|wolter> -o <dryrun|testupload>"
 fi
 
 if [[ $POTYPE = rosenberg ]]

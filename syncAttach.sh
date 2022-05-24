@@ -8,6 +8,6 @@ rm $HOME/mail/attachments/rosenberg/pdf/*
 rm $HOME/mail/attachments/wolter/pdf/*
 
 rclone sync --exclude "*sync.log*" $HOME/mail/attachments iningDropbox:attachments >> $HOME/mail/attachments/log/sync.log 2>&1
-rclone copy --max-age 4m --no-traverse --exclude "++rosenberg*" $HOME/mail/attachments iningDropbox:workingDirectory >> $HOME/mail/attachments/log/wdsync.log 2>&1
+rclone copy --max-age 4m --no-traverse --exclude "++rosenberg*" --exclude "++wolter*" $HOME/mail/attachments iningDropbox:workingDirectory >> $HOME/mail/attachments/log/wdsync.log 2>&1
 
 $HOME/mail/chhserverscripts/scraperscript.sh $HOME/mail/attachments/rosenberg

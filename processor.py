@@ -52,6 +52,7 @@ class POProcessor:
     def listNodes(self):
         self.nodenetwork.listNodes()
 
+
     def parse(self, po_object):
         # initialize starting nodes from the po object
         for item in po_object.items:
@@ -103,7 +104,15 @@ class POProcessor:
                             val = val.strftime('%Y-%m-%d')
                     nodes[header] = val
             print(nodes)
-            remote_table.create(nodes)
+            try:
+                remote_table.create(nodes)
+            except HTTPError as error:
+                errortext = repr(error)
+                selectmatch = re.search(r'select option.*', errortext)
+                if selectmatch:
+                    print(selectmatch)
+                else:
+                    print(errortext)
 
         # nodes = []
         # for tr in nodetrees:
@@ -154,10 +163,45 @@ class ProcessorRule:
             if self.type == 'regex':
                 print('Type set to regex but no regex string provided.')
 
+    def evaluateRuleCondition(self, nodenetwork):
+        conditiontree = self.tree.find('condition')
+        if not conditiontree:
+            return True
+
+        inp = conditiontree.find('node').attrib['name']
+        inpnode = nodenetwork.getNode(inp) 
+        conditiontype = conditiontree.attrib['type']
+        # parity = conditiontree.attrib['parity'],
+        output = False
+        if inpnode:
+            val = inpnode.value
+            if conditiontype == 'match':
+                regex = conditiontree.find('regex').text
+                match = re.search(regex, val)
+                if match:
+                    output = True
+                else:
+                    output = False
+            elif conditiontype == 'nomatch':
+                regex = conditiontree.find('regex').text
+                match = re.search(regex, val)
+                if match:
+                    output = False
+                else:
+                    output = True
+            elif conditiontype == 'nodeDoesNotExist':
+                output = False
+        else: #if inpnode is not found
+            output = False
+
+        return output
 
     def applyRule(self, nodenetwork):
         """ Applies the rule and returns the name of the next rule to apply """
         # print('applying rule ', self.name)
+        if not self.evaluateRuleCondition(nodenetwork):
+            return None
+
         if self.scope == 'global':
             # find the correct function based on the self.type string
             # eg <type>splitRegex</type>
@@ -193,6 +237,20 @@ class ProcessorRule:
             newname = al.text
             nodenetwork.renameNode(name, newname)
 
+    def copyNode(self, nodenetwork):
+        """
+        copies nodes within the network
+        """
+        # inputs = self.tree.findall('input')
+        inp = self.tree.find('input').text 
+        newnodename = self.tree.find('newnodename').text
+        inpnode = nodenetwork.getNode(inp)
+        if inpnode:
+            newnode = copy.copy(inpnode)
+            newnode.header = newnodename
+            # print("COPYING ", newnodename)
+            nodenetwork.addNode(newnode)
+
     def coerceDate(self, nodenetwork):
         """ tries to get whatever fubar date format provided by the client into
         something recognizable, usually a datetime object """ 
@@ -214,7 +272,7 @@ class ProcessorRule:
                 pass
             inpnode.value = val
 
-    def simpleCopy(self, nodenetwork):
+    def copyToItems(self, nodenetwork):
         """ copies a node from global to every child POItemNetwork """
         inp = self.tree.find('input').text 
         newnodename = self.tree.find('newnodename').text
@@ -396,6 +454,7 @@ class PONodeNetwork:
             item.addNode(copy.copy(ponode))
 
     def addNode(self, ponode):
+        """ adds a node. Overwrites existing nodes of the same name """
         self.nodes[ponode.header] = ponode
 
     def addpoitem(self, poitem):
@@ -544,3 +603,4 @@ class POFieldNode:
         newnode.checkFlag = pofield.checkFlag
         newnode.checkString = pofield.checkString
         return newnode
+
