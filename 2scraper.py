@@ -2,7 +2,7 @@
 
 import parser as poparser
 import processor as poprocessor
-import sys, os, pyairtable, logger, argparse
+import sys, os, pyairtable, logger, argparse, datetime
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv, dotenv_values
 from openpyxl import load_workbook
@@ -22,27 +22,34 @@ if __name__ == '__main__':
     baseid = os.environ['AIRTABLEBASEID']
     remote_table = pyairtable.Table(key, baseid, 'Table 1')
     test_table = pyairtable.Table(key, baseid, 'test table')
+    datestring = datetime.datetime.now().strftime("%d%b%Y-%H:%M")
 
-    # read excel file
+    
+    # parse script args
     argparser = argparse.ArgumentParser(description="Scraper v2.0")
     argparser.add_argument('-potype')
     argparser.add_argument('-mode', nargs='?', const='dryrun')
     argparser.add_argument('filepath')
     args = argparser.parse_args()
-    print(args.filepath, args.potype)
+    # print(args.filepath, args.potype)
 
     filepath = args.filepath
     mode = args.mode
     potype = args.potype
     uploadflag = False
     testupload = False
+    realupload = False
 
-    if mode == 'upload':
+    if mode == 'tempupload':
         uploadflag = True
 
     if mode == 'testupload':
         testupload = True
 
+    if mode == 'realupload':
+        realupload = True
+
+    # read excel file
     filename = os.path.basename(filepath)
     excelfile = load_workbook(filename = filepath, data_only=True)
     sheetnames = excelfile.sheetnames
@@ -50,7 +57,7 @@ if __name__ == '__main__':
     sheetdata = []
     for name in sheetnames: 
         data_rows = [] 
-        print('Parsing sheet:', name)
+        print(datestring, ' Parsing sheet:', name)
         if name not in filename:
             print('sheet name not the same as filename!!')
             sheetFileMismatch = True
@@ -64,15 +71,7 @@ if __name__ == '__main__':
                 if item == ' ':
                     newitem = None
                 newrowvals.append(newitem)
-                    
-            # if rowvals[0]:
-                # codes = ''
-                # for char in str(rowvals[0]):
-                    # codes += str(ord(char))
-                    # codes += '.'
-                # print(rowvals[0], codes)
-            # print(rowvals)
-            # print(len(newrowvals))
+
             data_rows.append(newrowvals)
         sheetdata.append(data_rows)
 
@@ -81,7 +80,7 @@ if __name__ == '__main__':
     if potype == 'wolter': 
         parsertree = ET.parse('/home/chh/mail/chhserverscripts/rules-parser-wolter.xml')
     elif potype == 'rosenberg':
-        parsertree = ET.parse('rules-parser.xml')
+        parsertree = ET.parse('/home/chh/mail/chhserverscripts/rules-parser.xml')
     parser = poparser.POParser(parsertree)
     parser.filename = filename
 
@@ -109,8 +108,12 @@ if __name__ == '__main__':
     # nodenetwork.listNodes()
     if testupload:
         processor.upload('upload group 1', test_table)
-    # nodenetwork.listNodes(nodenames = ['PO Date', 'PO Delivery Date'])
-    nodenetwork.listNodes(nodenames = ['Note Raw', 'bracket1st', 'bracket2nd', 'F/B (scraped)'])
+
+    if realupload:
+        processor.upload('upload group 1', remote_table)
+
+    # nodenetwork.listNodes(nodenames = ['detailSplit'])
+    # nodenetwork.listNodes(nodenames = ['Note Raw', 'bracket1st', 'bracket2nd', 'F/B (scraped)'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'splitA', 'modelstringItem', 'MODEL', 'modelstringExtra'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'detailSplit'])

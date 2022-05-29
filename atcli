@@ -122,13 +122,16 @@ elif command == "updatefab":
             completion_log += str(qty)
             completion_log += '\n'
             print(qty_completed)
-            fields['Fabrication Done?'] = True
-            fields['Qty Completed'] = qty_completed
-            fields['Completion Log'] = completion_log
-            fields['Fabrication Date Done'] = datetime.datetime.now().strftime('%Y-%m-%d')
-            print(item['fields'])
-            fields.pop('PO Number ITEM')
-            table.update(itemid, fields)
+            if fields['Fabrication Done?'] == False:
+                fields['Fabrication Done?'] = True
+                fields['Qty Completed'] = qty_completed
+                fields['Completion Log'] = completion_log
+                fields['Fabrication Date Done'] = datetime.datetime.now().strftime('%Y-%m-%d')
+                print(item['fields'])
+                fields.pop('PO Number ITEM')
+                table.update(itemid, fields)
+            else:
+                print("Error - Fabrication already done. Aborting update.")
             # print(datetime.datetime.now())
 
 elif command == "help" or command == "--help":

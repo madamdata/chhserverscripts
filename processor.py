@@ -1,5 +1,5 @@
 import parser as poparser
-import re, os, sys, copy, pyairtable, datetime
+import re, os, sys, copy, pyairtable, datetime, requests
 
 
 class POProcessor:
@@ -106,11 +106,12 @@ class POProcessor:
             print(nodes)
             try:
                 remote_table.create(nodes)
-            except HTTPError as error:
+            except requests.exceptions.HTTPError as error:
+                # Error handling - if it's one of the usual wrong field / no option errors, post only revelant info
                 errortext = repr(error)
-                selectmatch = re.search(r'select option.*', errortext)
-                if selectmatch:
-                    print(selectmatch)
+                errmatch = re.search(r'(select option|Unknown field name).*', errortext)
+                if errmatch:
+                    print("HTTPError - ", errmatch.group(0), '\n')
                 else:
                     print(errortext)
 
@@ -189,18 +190,19 @@ class ProcessorRule:
                     output = False
                 else:
                     output = True
-            elif conditiontype == 'nodeDoesNotExist':
+
+        # if testing for node exists, fail True
+        if conditiontype == 'nodeDoesNotExist': 
+            if inpnode:
                 output = False
-        else: #if inpnode is not found
-            output = False
+            else:
+                output = True
 
         return output
 
     def applyRule(self, nodenetwork):
         """ Applies the rule and returns the name of the next rule to apply """
         # print('applying rule ', self.name)
-        if not self.evaluateRuleCondition(nodenetwork):
-            return None
 
         if self.scope == 'global':
             # find the correct function based on the self.type string
@@ -210,7 +212,8 @@ class ProcessorRule:
             except AttributeError:
                 print('No such function: ', self.type)
             else:
-                function(nodenetwork)
+                if self.evaluateRuleCondition(nodenetwork):
+                    function(nodenetwork)
 
         if self.scope == 'item':
             try: 
@@ -219,7 +222,8 @@ class ProcessorRule:
                 print('No such function: ', self.type)
             else:
                 for item in nodenetwork.poitems:
-                    function(item)
+                    if self.evaluateRuleCondition(item):
+                        function(item)
             # if self.type == 'splitregex':
                 # for item in nodenetwork.poitems:
                     # self.splitregex(item)
@@ -299,7 +303,7 @@ class ProcessorRule:
                     if group in keynode.value:
                         newnode = copy.deepcopy(node)
                         newnode.header = newnodename
-                        print('copying ', keynode.value, newnode.value)
+                        # print('copying ', keynode.value, newnode.value)
                         poitem.addNode(newnode)
             
             

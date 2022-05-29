@@ -10,13 +10,6 @@
 				<group>1</group>
 				<node name="split{}"></node>
 			</multisplit>
-			<split><!-- split matches the FIRST instance of a regex and sends it to the specified node-->
-
-				<regex>(Teco|Att) Motor</regex>
-				<group number='1'> <!--if you need to extract only part of the match, specify the group number-->
-					<node name="motorBrand"></node>
-				</group>
-			</split>
 		</rule>
 
 		<rule type="splitRegex">
@@ -54,6 +47,12 @@
 					<node name='Delivery Date'></node>
 				</group>
 			</split>
+			<split>
+				<regex>(take|Take).*from.*(L[0-9]{5})</regex>
+				<group number='2'>
+					<node name='Take From'></node>
+				</group>
+			</split>
 		</rule>
 
 		<rule type="coerceDate">
@@ -70,11 +69,26 @@
 			<input>PO Number</input>
 			<newnodename>PO Number</newnodename>
 		</rule>
+		<rule type="copyToItems">
+			<name>copyFilename</name>
+			<input>Filename</input>
+			<newnodename>Filename</newnodename>
+		</rule>
 
 		<rule type="copyToItems">
 			<name>copyPODate</name>
 			<input>PO Date</input>
 			<newnodename>PO Date</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copySite</name>
+			<input>Project Site</input>
+			<newnodename>Project Site</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyNoteRaw</name>
+			<input>Note Raw</input>
+			<newnodename>Note Raw</newnodename>
 		</rule>
 
 		<rule type="copyToItems">
@@ -103,6 +117,11 @@
 			<input>bracket2nd</input>
 			<newnodename>bracket2nd</newnodename>
 		</rule>
+		<rule type="copyToItems">
+			<name>copyTakeFrom</name>
+			<input>Take From</input>
+			<newnodename>Take From</newnodename>
+		</rule>
 
 		<rule type="copyByRegex">
 			<name>copyDetailSplits</name>
@@ -119,6 +138,7 @@
 			<name>renameFields</name>
 			<alias name="Model / Description">MODEL</alias>
 			<alias name="CLASS">t_motor_class</alias>
+			<alias name="S$U/P">Price per Unit</alias>
 		</rule>
 
 		<rule type="copyNode">
@@ -222,6 +242,16 @@
 			</split>
 			<!--<regex input='MODEL'>^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? ? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$</regex>-->
 		</rule>
+		<rule type="splitRegex">
+			<name>splitMotorSize</name>
+			<input>MOTOR</input>
+			<split>
+				<regex>([0-9.\/]+)kw</regex>
+				<group number='1'>
+					<node name='motorSize'></node>
+				</group>
+			</split>
+		</rule>
 
 		<rule type="splitRegex">
 			<name>detailSplitRule</name>
@@ -233,7 +263,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>(Teco|Att|AEG) Motor</regex>
+				<regex>(Teco|Att|AEG|UMEB) Motor</regex>
 				<group number='1'>
 					<node name='motorBrand'></node>
 				</group>
@@ -245,7 +275,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>([0-9]+)v\/</regex>
+				<regex>([0-9]+)[vV]\/</regex>
 				<group number='1'>
 					<node name='t_motor_voltage'></node>
 				</group>
@@ -262,6 +292,37 @@
 					<node name='Motor Frame (Scraped)'></node>
 				</group>
 			</split>
+		</rule>
+
+		<rule type="matchAndTranslate">
+			<name>translatePoles</name>
+			<input>t_motor_poles</input>
+			<translate>
+				<match input='t_motor_poles'>2</match>
+				<node name='motorSpeed'>2880</node>
+			</translate>
+			<translate>
+				<match input='t_motor_poles'>4</match>
+				<node name='motorSpeed'>1440</node>
+			</translate>
+			<translate>
+				<match input='t_motor_poles'>2\/4</match>
+				<node name='motorSpeed'>2880/1440</node>
+			</translate>
+		</rule>
+
+		<rule type="matchAndTranslate">
+			<name>translateMotorClass</name>
+			<input>t_motor_class</input>
+			<input>t_motor_class_series</input>
+			<translate>
+				<match input='t_motor_class'>[A-Z]</match>
+				<node name='motorClass'>Class {t_motor_class}</node>
+			</translate>
+			<translate>
+				<match input='t_motor_class_series'>[A-Z]</match>
+				<node name='motorClass'>{motorClass} ({t_motor_class_series})</node>
+			</translate>
 		</rule>
 
 
@@ -283,6 +344,11 @@
 				<match input='modelstringExtra'>-Ex</match>
 				<node name="modelstringItem">Ax-Ex</node>
 			</translate>
+			<!--<translate>-->
+				<!--<match input='modelstringItem'>Ax</match>-->
+				<!--<match input='modelstringExtra'>-S</match>-->
+				<!--<node name="modelstringItem">Ax-Ex</node>-->
+			<!--</translate>-->
 			<translate>
 				<match input='modelstringItem'>BIF</match>
 				<node name="modelstringItem">Bif</node>
@@ -321,22 +387,6 @@
 			</translate>
 		</rule>
 
-		<rule type="matchAndTranslate">
-			<name>translatePoles</name>
-			<input>t_motor_poles</input>
-			<translate>
-				<match input='t_motor_poles'>2</match>
-				<node name='motorSpeed'>2880</node>
-			</translate>
-			<translate>
-				<match input='t_motor_poles'>4</match>
-				<node name='motorSpeed'>1440</node>
-			</translate>
-			<translate>
-				<match input='t_motor_poles'>2\/4</match>
-				<node name='motorSpeed'>2880/1440</node>
-			</translate>
-		</rule>
 
 		<rule type="matchAndTranslate">
 			<name>translateSilencerSize</name>
@@ -362,19 +412,6 @@
 			<name>translateRSSilencer</name>
 			<input>modelstringRSExtra</input>
 			<input>modelstringSilencerSize</input>
-		</rule>
-		<rule type="matchAndTranslate">
-			<name>translateMotorClass</name>
-			<input>t_motor_class</input>
-			<input>t_motor_class_series</input>
-			<translate>
-				<match input='t_motor_class'>[A-Z]</match>
-				<node name='motorClass'>Class {t_motor_class}</node>
-			</translate>
-			<translate>
-				<match input='t_motor_class_series'>[A-Z]</match>
-				<node name='motorClass'>{motorClass} ({t_motor_class_series})</node>
-			</translate>
 		</rule>
 		<rule type="matchAndTranslate">
 			<name>translateMotorVoltage</name>
@@ -415,9 +452,12 @@
 	<checkrules>
 		<rule type='uploadnodes'>
 			<name>upload group 1</name>
-			<node name='PO Number'>PO Number</node>
+			<node name='PO Number'></node>
+			<node name='Filename'></node>
+			<node name='Project Site'></node>
 			<node name='PO Date' type='datetime'></node>
 			<node name='PO Delivery Date' type='datetime'></node>
+			<node name='Note Raw'></node>
 			<node name='ITEM' type='string'>Item No.</node>
 			<node name='QTY' type='int'>Qty</node>
 			<node name='MODEL'>Item Raw</node>
@@ -434,6 +474,8 @@
 			<node name='motorVoltage'>Motor Voltage</node>
 			<node name='F/B (scraped)'></node>
 			<node name='Motor Frame (Scraped)'></node>
+			<node name='Price per Unit'></node>
+			<node name='Take From'></node>
 		</rule>
 	</checkrules>
 </processor-rules>

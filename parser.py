@@ -238,6 +238,7 @@ class POParser:
         # for every cell in the sheet, addressed by row and col (x and y)... 
         po_object = PO()
         po_object.filename = self.filename
+        po_object.addItem(POField('Filename', self.filename))
         for rownum, row in enumerate(data_rows):
             for colnum, cell in enumerate(row):
                 # if the cell isn't empty, apply every single field's 'matchAndDoAction' function to the cell to see which is a match
@@ -295,7 +296,6 @@ class TableParser:
         xcoord = coordinateTuple[0]
         ycoord = coordinateTuple[1]
         numCols = len(self.rawtable[0])
-        print('numcols ', numCols)
         for colnum in range(0, numCols):
             header = self.rawtable[ycoord][colnum]
             if colnum == 0: #get the first column header and store as the item field title
@@ -381,7 +381,6 @@ class PO:
                 # item.printVal()
         if self.poitemlist: 
             self.poitemlist.printVal()
-        print('Filename: ', self.filename)
 
     def tempUploadFunc(self, remote_table):
         ponumber = self
