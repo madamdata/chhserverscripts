@@ -70,7 +70,7 @@ class POProcessor:
         
         return self.nodenetwork
 
-    def upload(self, uploadrulename, remote_table):
+    def upload(self, uploadrulename, remote_table, **kwargs):
         # print(self.checkrules) 
         try:
             uploadrule = self.checkrules[uploadrulename]
@@ -78,6 +78,9 @@ class POProcessor:
             print('No upload rule found by that name: ', uploadrulename)
             return None
         nodetrees = uploadrule.tree.findall('node') 
+        #print ------------ upload data ------------- marker
+        if kwargs['printout']:
+            print('---------------- UPLOAD DATA -----------------')
         for poitem in self.nodenetwork.poitems:
             nodes = {}
             for tr in nodetrees:
@@ -96,6 +99,8 @@ class POProcessor:
                         val = str(val)
                     if valtype == 'int':
                         val = int(val)
+                    if valtype == 'list':
+                        val = [val]
                     if valtype == 'datetime':
                         # if it's supposed to be datetime and it's not, don't upload
                         if val.__class__.__name__ != 'datetime':
@@ -103,7 +108,10 @@ class POProcessor:
                         else:
                             val = val.strftime('%Y-%m-%d')
                     nodes[header] = val
-            print(nodes)
+            # see 'printout' variable from kwargs
+            if kwargs['printout']: 
+                print(nodes, '\n')
+
             try:
                 remote_table.create(nodes)
             except requests.exceptions.HTTPError as error:
@@ -374,7 +382,11 @@ class ProcessorRule:
                     inpdata = None
                 if not inpdata:
                     inpdata = ''
-                if re.search(regex, inpdata): 
+
+                # if inpdata.__class__.__name__ == 'datetime':
+                    # #dates will ALWAYS match
+                    # matchTruth.append(True)
+                if re.search(regex, str(inpdata)): 
                     matchTruth.append(True)
                 else: 
                     matchTruth.append(False)
@@ -509,7 +521,7 @@ class PONodeNetwork:
             nodenames = kwargs['nodenames']
         except KeyError:
             nodenames = []
-        print("Listing nodes --- ", nodenames, '\n')
+        print("------------ PROCESSOR OUTPUT : Listing nodes ", nodenames, '----------------- \n')
         for header, node in self.nodes.items():
             # print(header, ": ", node.value)
             if (header in nodenames) or ('allglobal' in nodenames) or (nodenames == []):

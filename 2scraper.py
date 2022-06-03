@@ -55,9 +55,11 @@ if __name__ == '__main__':
     sheetnames = excelfile.sheetnames
     sheetFileMismatch = False
     sheetdata = []
+
+    print(' >>>>>>> BEGIN ', filename, ' >>>>>>>>>\n')
     for name in sheetnames: 
         data_rows = [] 
-        print(datestring, ' Parsing sheet:', name)
+        print(datestring, '- Parsing sheet:', name)
         if name not in filename:
             print('sheet name not the same as filename!!')
             sheetFileMismatch = True
@@ -94,12 +96,8 @@ if __name__ == '__main__':
         multiple_sheets = True
         po.addExtraCheckStrings('MULTIPLE SHEETS IN THIS FILE')
 
-    print('---------- PARSER OUTPUT -----------\n')
-
     po.printAll()
     po.summarizeCheckStrings()
-
-    print('---------- PROCESSOR OUTPUT -----------\n')
 
     #PROCESSOR
     processortree = ET.parse('/home/chh/mail/chhserverscripts/rules-processor.xml')
@@ -107,18 +105,18 @@ if __name__ == '__main__':
     nodenetwork = processor.parse(po)
     # nodenetwork.listNodes()
     if testupload:
-        processor.upload('upload group 1', test_table)
+        processor.upload('upload group 1', test_table, printout=True)
 
     if realupload:
-        processor.upload('upload group 1', remote_table)
+        processor.upload('upload group 1', remote_table, printout=False)
 
-    # nodenetwork.listNodes(nodenames = ['detailSplit'])
+    # nodenetwork.listNodes(nodenames = ['PO Delivery Date'])
     # nodenetwork.listNodes(nodenames = ['Note Raw', 'bracket1st', 'bracket2nd', 'F/B (scraped)'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'splitA', 'modelstringItem', 'MODEL', 'modelstringExtra'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'detailSplit'])
 
-    print('-----------------------------\n')
+    print(' >>>>>>> END ', filename, '>>>>>>>\n')
 
 
     if uploadflag:

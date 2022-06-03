@@ -299,9 +299,9 @@ class TableParser:
         for colnum in range(0, numCols):
             header = self.rawtable[ycoord][colnum]
             if colnum == 0: #get the first column header and store as the item field title
-                itemHeader = header
+                itemHeader = header.replace(' ', '') #STRIP WHITESPACE
             if header != None:
-                colNumbers.append((header, colnum))
+                colNumbers.append((header.replace(' ', ''), colnum))
         return colNumbers, itemHeader
 
     def parse(self, data_rows, coordinateTuple):
@@ -372,6 +372,7 @@ class PO:
         self.extracheckstrings += string
 
     def printAll(self):
+        print('--------------- PARSER OUTPUT ------------------')
         for item in self.items:
             item.printVal()
             # if item.__class__.__name__ == 'POItemList':

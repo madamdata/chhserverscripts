@@ -64,7 +64,6 @@ fi
 
 if [[ -n $PONUMBER ]]
 then
-	echo '*$PONUMBER*.xlsx'
 	find $SEARCHPATH -name "*$PONUMBER*.xlsx" -exec sh -c "2scraper.py -mode $MODE -potype $POTYPE '{}' && read -p 'continue?' -n 1" \;
 fi
 

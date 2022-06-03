@@ -7,9 +7,9 @@ SLOGFILENAME="attachments/log/scrape.log"
 
 cd $WORKINGDIRECTORY
 printf "\n" >> $ALOGFILENAME
-printf " ########### $DATESTRING ############" >> $ALOGFILENAME
+printf "   ########### $DATESTRING ############" >> $ALOGFILENAME
 printf "\n" >> $ALOGFILENAME
 
 printf "\n" >> $SLOGFILENAME
-printf " ########### $DATESTRING ############" >> $SLOGFILENAME
+printf "   ########### $DATESTRING ############" >> $SLOGFILENAME
 printf "\n" >> $SLOGFILENAME
