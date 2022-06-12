@@ -41,36 +41,68 @@
 					<node name='bracket2nd'></node>
 				</group>
 			</split>
-			<!--<split>-->
-				<!--<regex>([0-9]+\/[0-9]+\/[0-9]+)</regex>-->
-				<!--<group number='1'>-->
-					<!--<node name='Delivery Date'></node>-->
-				<!--</group>-->
-			<!--</split>-->
 			<split>
 				<regex>(take|Take).*from.*(L[0-9]{5})</regex>
 				<group number='2'>
 					<node name='Take From'></node>
 				</group>
 			</split>
+			<!--<split>-->
+				<!--<regex>.*(w\/o grease nipples|the fan dimensions according to the sample sent).*</regex>-->
+				<!--<group number='1'>-->
+					<!--<node name='greaseNippleRemark'></node>-->
+				<!--</group>-->
+			<!--</split>-->
 			<split>
-				<regex>.*(w\/o grease nipples|the fan dimensions according to the sample sent).*</regex>
+				<regex>(?i)Same as previous order (.*) dated (.*)</regex>
 				<group number='1'>
-					<node name='greaseNippleRemark'></node>
+					<node name='samePrevOrderNum'></node>
+				</group>
+				<group number='2'>
+					<node name='samePrevOrderDate'></node>
 				</group>
 			</split>
 		</rule>
 
 		<rule type="matchAndTranslate">
 			<name>translateGreaseNipple</name>
-			<input>greaseNippleRemark</input>
+			<input>Note Raw</input>
 			<translate>
-				<match input='greaseNippleRemark'>.*w\/o grease nipples.*</match>
-				<node name='greaseNippleRemark'>不要加打油</node>
+				<match input='Note Raw'>(?i).*w\/o grease nipples.*</match>
+				<node name='greaseNippleRemark'>{greaseNippleRemark}不要加打油 </node>
 			</translate>
 			<translate>
-				<match input='greaseNippleRemark'>.*the fan dimensions according to the sample sent.*</match>
-				<node name='greaseNippleRemark'>照样本做</node>
+				<match input='Note Raw'>(?i).*the fan dimensions according to the sample sent.*</match>
+				<node name='greaseNippleRemark'>{greaseNippleRemark}照样本做 </node>
+			</translate>
+			<translate>
+				<match input='Note Raw'>(?i).*Flange rolled casing without rebeading \(flat flange\).*</match>
+				<!--<match input='Note Raw'>(?i).*Flange rolled casing.*</match>-->
+				<node name='greaseNippleRemark'>{greaseNippleRemark}Flange卷平  </node>
+			</translate>
+		</rule>
+
+		<rule type="matchAndTranslate">
+			<name>sameAsPrev</name>
+			<input>Note Raw</input>
+			<condition type='nodeExists'>
+				<node name='samePrevOrderNum'></node>
+			</condition>
+			<translate>
+				<match input='greaseNippleRemark'>.*</match>
+				<node name='greaseNippleRemark'>{greaseNippleRemark} 照旧{samePrevOrderNum} {samePrevOrderDate}</node>
+				<node name='F/B (scraped)'>查 F/B 照旧</node>
+			</translate>
+		</rule>
+
+		<rule type="matchAndTranslate">
+			<name>holdingBrackets</name>
+			<input>bracket1st</input>
+			<input>bracket2nd</input>
+			<translate>
+				<match input='bracket1st'>[0-9]+</match>
+				<match input='bracket2nd'>[0-9]+</match>
+				<node name='F/B (scraped)'>F/B {bracket1st}in x {bracket2nd}in</node>
 			</translate>
 		</rule>
 		<rule type="matchAndTranslate">
@@ -117,9 +149,14 @@
 			<newnodename>PO Date</newnodename>
 		</rule>
 		<rule type="copyToItems">
-			<name>copyGalv</name>
-			<input>Galvanised</input>
-			<newnodename>Galvanised</newnodename>
+			<name>copyPODate</name>
+			<input>PO Date</input>
+			<newnodename>PO Date</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyFB</name>
+			<input>F/B (scraped)</input>
+			<newnodename>F/B (scraped)</newnodename>
 		</rule>
 		<rule type="copyToItems">
 			<name>copyUrgency</name>
@@ -173,6 +210,11 @@
 			<input>Take From</input>
 			<newnodename>Take From</newnodename>
 		</rule>
+		<rule type="copyToItems">
+			<name>copyCheckString</name>
+			<input>checkString</input>
+			<newnodename>checkString</newnodename>
+		</rule>
 
 		<rule type="copyByRegex">
 			<name>copyDetailSplits</name>
@@ -189,9 +231,12 @@
 			<name>renameFields</name>
 			<alias name="Model/Description">MODEL</alias>
 			<alias name="Model">MODEL</alias>
+			<alias name="Motor">MOTOR</alias>
 			<alias name="Qty/Uts">QTY</alias>
 			<alias name="Item">ITEM</alias>
 			<alias name="T/Box">T/BOX</alias>
+			<alias name="T/Box Position">T/BOX</alias>
+			<alias name="T/BOX POSITION">T/BOX</alias>
 			<alias name="CLASS">t_motor_class</alias>
 			<alias name="S$U/P">Price per Unit</alias>
 		</rule>
@@ -480,6 +525,10 @@
 			<name>translateRSSilencer</name>
 			<input>modelstringRSExtra</input>
 			<input>modelstringSilencerSize</input>
+			<translate>
+				<match input='modelstringRSExtra'>.*c\/w [Mm]elinex</match> 
+				<node name='modelstringSilencerSize'>{modelstringSilencerSize} c/w Melinex</node>
+			</translate>
 		</rule>
 		<rule type="matchAndTranslate">
 			<name>translateMotorVoltage</name>
@@ -499,16 +548,6 @@
 			<translate>
 				<match input='motorSize'>^3$</match>
 				<node name='motorSize'>3.0</node>
-			</translate>
-		</rule>
-		<rule type="matchAndTranslate">
-			<name>holdingBrackets</name>
-			<input>bracket1st</input>
-			<input>bracket2nd</input>
-			<translate>
-				<match input='bracket1st'>[0-9]+</match>
-				<match input='bracket2nd'>[0-9]+</match>
-				<node name='F/B (scraped)'>F/B {bracket1st}in x {bracket2nd}in</node>
 			</translate>
 		</rule>
 		<rule type='mathx10RS'>
@@ -548,6 +587,7 @@
 			<node name='PO Number'></node>
 			<node name='Galvanised' type='datetime'>Galvanised/Fabrication Date (Requested)</node>
 			<node name='Filename'></node>
+			<node name='checkString'></node>
 		</rule>
 	</checkrules>
 </processor-rules>

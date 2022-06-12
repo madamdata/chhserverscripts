@@ -391,7 +391,7 @@ class PO:
             remote_table.create(outputdict)
             print(outputdict)
 
-    def summarizeCheckStrings(self):
+    def collectCheckStrings(self):
         checkstrings = ''
         for item in self.items:
             checkstrings += item.getCheckString()
@@ -406,7 +406,11 @@ class PO:
             checkstrings = checkstrings.replace('multiTypeItem ', '')
             checkstrings += 'multiTypeItems'
 
-        print('Summary of check strings: ', checkstrings)
+        self.checkstrings = checkstrings
+        self.items.append(POField('checkString', checkstrings))
+
+    def summarizeCheckStrings(self):
+        print('Summary of check strings: ', self.checkstrings)
         print('Extra checks: ', self.extracheckstrings)
              
             

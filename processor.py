@@ -205,6 +205,11 @@ class ProcessorRule:
                 output = False
             else:
                 output = True
+        if conditiontype == 'nodeExists': 
+            if inpnode:
+                output = True
+            else:
+                output = False
 
         return output
 
@@ -328,6 +333,8 @@ class ProcessorRule:
             node = nodenetwork.getNode(item)
             if node:
                 replacementText = node.value
+                if replacementText == None:
+                    replacementText = ''
                 # print(outval)
                 # print(replacementText)
                 # print(outvalTmpSub)

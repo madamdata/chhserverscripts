@@ -97,6 +97,7 @@ if __name__ == '__main__':
         po.addExtraCheckStrings('MULTIPLE SHEETS IN THIS FILE')
 
     po.printAll()
+    po.collectCheckStrings()
     po.summarizeCheckStrings()
 
     #PROCESSOR
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     if realupload:
         processor.upload('upload group 1', remote_table, printout=False)
 
-    # nodenetwork.listNodes(nodenames = ['PO Delivery Date'])
+    # nodenetwork.listNodes(nodenames = ['F/B (scraped)'])
     # nodenetwork.listNodes(nodenames = ['Note Raw', 'bracket1st', 'bracket2nd', 'F/B (scraped)'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'splitA', 'modelstringItem', 'MODEL', 'modelstringExtra'])
