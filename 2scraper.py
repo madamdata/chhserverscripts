@@ -36,12 +36,12 @@ if __name__ == '__main__':
     filepath = args.filepath
     mode = args.mode
     potype = args.potype
-    uploadflag = False
     testupload = False
     realupload = False
+    dryrun = False
 
-    if mode == 'tempupload':
-        uploadflag = True
+    if mode == 'dryrun':
+        dryrun = True
 
     if mode == 'testupload':
         testupload = True
@@ -111,6 +111,9 @@ if __name__ == '__main__':
     if realupload:
         processor.upload('upload group 1', remote_table, printout=False)
 
+    if dryrun:
+        processor.upload('upload group 1', test_table, printout=True, dryrun=True)
+
     # nodenetwork.listNodes(nodenames = ['F/B (scraped)'])
     # nodenetwork.listNodes(nodenames = ['Note Raw', 'bracket1st', 'bracket2nd', 'F/B (scraped)'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL'])
@@ -119,7 +122,4 @@ if __name__ == '__main__':
 
     print(' >>>>>>> END ', filename, '>>>>>>>\n')
 
-
-    if uploadflag:
-        po.tempUploadFunc(remote_table)
 

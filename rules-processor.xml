@@ -231,6 +231,7 @@
 			<name>renameFields</name>
 			<alias name="Model/Description">MODEL</alias>
 			<alias name="Model">MODEL</alias>
+			<alias name="Date">DATE</alias>
 			<alias name="Motor">MOTOR</alias>
 			<alias name="Qty/Uts">QTY</alias>
 			<alias name="Item">ITEM</alias>
@@ -239,6 +240,7 @@
 			<alias name="T/BOX POSITION">T/BOX</alias>
 			<alias name="CLASS">t_motor_class</alias>
 			<alias name="S$U/P">Price per Unit</alias>
+			<alias name="s/n">ITEM</alias>
 		</rule>
 
 		<rule type="copyNode">
@@ -440,6 +442,7 @@
 			<!--<nextrule>foo</nextrule>-->
 			<input>modelstringItem</input>
 			<input>modelstringExtra</input>
+			<input>MODEL</input>
 			<translate>
 				<match input='modelstringItem'>AND</match>
 				<node name="modelstringItem">Ax</node>
@@ -517,7 +520,7 @@
 			<translate>
 				<match input='modelstringSilencerSize'>(-[0-9]+)L</match>
 				<match input='modelstringItem'>(RS|RSM)</match>
-				<node name='modelstringSilencerSize'>{modelstringSilencerNumOnly}mmL</node>
+				<node name='modelstringSilencerSize'>-{modelstringSilencerNumOnly}mmL</node>
 			</translate>
 		</rule>
 
@@ -528,6 +531,11 @@
 			<translate>
 				<match input='modelstringRSExtra'>.*c\/w [Mm]elinex</match> 
 				<node name='modelstringSilencerSize'>{modelstringSilencerSize} c/w Melinex</node>
+			</translate>
+			<translate>
+				<match input='modelstringRSExtra'>(?i).*collar type.*</match> 
+				<node name='modelstringSilencerSize'>{modelstringSilencerSize} Collar</node>
+				<node name='modelstringCollarType'>collar</node>
 			</translate>
 		</rule>
 		<rule type="matchAndTranslate">
@@ -550,8 +558,19 @@
 				<node name='motorSize'>3.0</node>
 			</translate>
 		</rule>
+		<rule type="copyNode">
+			<name>copyRSSizetoSize</name>
+			<condition type='nodeExists'>
+				<node name='modelstringCollarType'></node>
+			</condition>
+			<input>modelstringRSSize</input>
+			<newnodename>modelstringSize</newnodename>
+		</rule>
 		<rule type='mathx10RS'>
 			<name>multRSSize</name>
+			<condition type='nodeDoesNotExist'>
+				<node name='modelstringCollarType'></node>
+			</condition>
 			<input>modelstringRSSize</input>
 			<node name='modelstringSize'></node>
 		</rule>
@@ -584,7 +603,7 @@
 			<node name='Motor Frame (Scraped)'></node>
 			<node name='Price per Unit'></node>
 			<node name='Take From'></node>
-			<node name='PO Number'></node>
+			<node name='PO Number' type='string'></node>
 			<node name='Galvanised' type='datetime'>Galvanised/Fabrication Date (Requested)</node>
 			<node name='Filename'></node>
 			<node name='checkString'></node>

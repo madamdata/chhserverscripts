@@ -1,6 +1,8 @@
 #!/bin/bash
 
-cd $1
+cd $2
+
+POTYPE=$1
 
 SCRAPELOGFILE="/home/chh/mail/attachments/log/scrape.log"
 
@@ -28,7 +30,6 @@ fi
 
 if ls ++*.[xX][lL][sS][xX] 1> /dev/null 2>&1; then
 	MODE='realupload'
-	POTYPE='rosenberg'
 	find . -name '++*.xlsx' -exec sh -c "~/mail/chhserverscripts/2scraper.py -mode $MODE -potype $POTYPE '{}'" \; >> $SCRAPELOGFILE 2>&1
 	for filename in ++*.[xX][lL][sS][xX];do mv $filename ${filename:2}; done
 	#find . -name "*.csv" -exec sh -c "2scraper.py -mode $MODE -potype $POTYPE '{}'" \; >> $SCRAPELOGFILE 2>&1

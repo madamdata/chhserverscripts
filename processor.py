@@ -73,6 +73,11 @@ class POProcessor:
     def upload(self, uploadrulename, remote_table, **kwargs):
         # print(self.checkrules) 
         try:
+            dryrun = kwargs['dryrun']
+        except KeyError:
+            dryrun = False
+
+        try:
             uploadrule = self.checkrules[uploadrulename]
         except KeyError:
             print('No upload rule found by that name: ', uploadrulename)
@@ -80,7 +85,10 @@ class POProcessor:
         nodetrees = uploadrule.tree.findall('node') 
         #print ------------ upload data ------------- marker
         if kwargs['printout']:
-            print('---------------- UPLOAD DATA -----------------')
+            if dryrun:
+                print('---------------- UPLOAD DATA (DRY RUN) -----------------')
+            else:
+                print('---------------- UPLOAD DATA -----------------')
         for poitem in self.nodenetwork.poitems:
             nodes = {}
             for tr in nodetrees:
@@ -112,16 +120,17 @@ class POProcessor:
             if kwargs['printout']: 
                 print(nodes, '\n')
 
-            try:
-                remote_table.create(nodes)
-            except requests.exceptions.HTTPError as error:
-                # Error handling - if it's one of the usual wrong field / no option errors, post only revelant info
-                errortext = repr(error)
-                errmatch = re.search(r'(select option|Unknown field name).*', errortext)
-                if errmatch:
-                    print("HTTPError - ", errmatch.group(0), '\n')
-                else:
-                    print(errortext)
+            if not dryrun:
+                try:
+                    remote_table.create(nodes)
+                except requests.exceptions.HTTPError as error:
+                    # Error handling - if it's one of the usual wrong field / no option errors, post only revelant info
+                    errortext = repr(error)
+                    errmatch = re.search(r'(select option|Unknown field name).*', errortext)
+                    if errmatch:
+                        print("HTTPError - ", errmatch.group(0), '\n')
+                    else:
+                        print(errortext)
 
         # nodes = []
         # for tr in nodetrees:
@@ -287,6 +296,9 @@ class ProcessorRule:
                 pass
             except TypeError:
                 pass
+
+            if val == 'ASAP':
+                val = datetime.datetime.now()
             inpnode.value = val
 
     def copyToItems(self, nodenetwork):

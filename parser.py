@@ -361,7 +361,7 @@ class PO:
             self.globalitems[item.header] = item
             if item.header == 'PO Number':
                 ponumber = item.value
-                ponumber = ponumber.replace(':', '').replace(' ', '')
+                ponumber = str(ponumber).replace(':', '').replace(' ', '')
                 self.ponumber = ponumber
         if item.__class__.__name__ == 'POItemList':
             self.poitemlist = item
@@ -371,7 +371,7 @@ class PO:
     def addExtraCheckStrings(self, string):
         self.extracheckstrings += string
 
-    def printAll(self):
+    def printAll(self, **kwargs):
         print('--------------- PARSER OUTPUT ------------------')
         for item in self.items:
             item.printVal()

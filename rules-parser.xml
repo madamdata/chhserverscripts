@@ -11,8 +11,7 @@
 		</field> 
 		<field type="Document level">
 			<name>issuedate</name>
-			<trigger type='raw'>Date</trigger>
-			<trigger type='raw'>DATE</trigger>
+			<trigger type='regex'>(?i)Date</trigger>
 			<maxtriggers>1</maxtriggers>
 			<cell>1, 0</cell>
 			<outputfield>PO Date</outputfield>
@@ -123,6 +122,12 @@
 				<regex>\n</regex>
 				<checkif>MATCH</checkif>
 				<checkstring>linebreak </checkstring>
+			</checkfunction>
+			<checkfunction type='regex'>
+				<header>(?i)(item).*</header>
+				<regex>(?i).*collar.*</regex>
+				<checkif>MATCH</checkif>
+				<checkstring>collarTypeDC</checkstring>
 			</checkfunction>
 			<action>Parse Table</action>
 			<tablefield>
