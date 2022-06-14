@@ -124,7 +124,7 @@
 				<checkstring>linebreak </checkstring>
 			</checkfunction>
 			<checkfunction type='regex'>
-				<header>(?i)(item).*</header>
+				<header>(?i)(model).*</header>
 				<regex>(?i).*collar.*</regex>
 				<checkif>MATCH</checkif>
 				<checkstring>collarTypeDC</checkstring>

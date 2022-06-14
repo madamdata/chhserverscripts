@@ -54,11 +54,11 @@
 				<!--</group>-->
 			<!--</split>-->
 			<split>
-				<regex>(?i)Same as previous order (.*) dated (.*)</regex>
-				<group number='1'>
+				<regex>(?i)Same as previous(.*?)([L0-9].+)\s*?dated\s*?([0-9\/]+)</regex>
+				<group number='2'>
 					<node name='samePrevOrderNum'></node>
 				</group>
-				<group number='2'>
+				<group number='3'>
 					<node name='samePrevOrderDate'></node>
 				</group>
 			</split>
@@ -253,7 +253,7 @@
 		</rule>
 
 		<rule type="splitRegex">
-			<name>modelstring</name>
+			<name>modelstringMainSplit</name>
 			<input>MODEL</input>
 			<split>
 				<regex>^(BIF|SWSI|HRES|AND|RV|DQ)(-Ex|-GVD|-CR|-T|-S)?</regex>
@@ -349,6 +349,18 @@
 				<regex>[0-9]+\/[0-9-]+\/.+\(([0-9]+)mmL\)</regex>
 				<group number='1'>
 					<node name="modelstringCasingLength"></node>
+				</group>
+			</split>
+			<split>
+				<regex>(?i)([0-9]+mmOD)</regex>
+				<group number='1'>
+					<node name="modelstringOD"></node>
+				</group>
+			</split>
+			<split>
+				<regex>(?i)([0-9]+mmPCD)</regex>
+				<group number='1'>
+					<node name="modelstringPCD"></node>
 				</group>
 			</split>
 			<!--<regex input='MODEL'>^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? ? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$</regex>-->
@@ -591,6 +603,8 @@
 			<node name='modelstringSize' type='string'>Size</node>
 			<node name='modelstringSilencerSize'>Silencer Size</node>
 			<node name='modelstringImpeller'>Impeller</node>
+			<node name='modelstringOD'>O/D</node>
+			<node name='modelstringPCD'>Casing PCD (Special) (mm)</node>
 			<node name='T/BOX'>T-box Position</node>
 			<node name='motorSize'>Motor Size</node>
 			<node name='motorClass'>Motor Class</node>
