@@ -55,6 +55,12 @@
 				<checkif>MATCH</checkif>
 				<checkstring>prevOrderDC </checkstring>
 			</checkfunction>
+			<checkfunction type='regex'>
+				<regex>L[0-9]{4,}</regex>
+				<!--<regex>^DETAIL.*$</regex>-->
+				<checkif>MATCH</checkif>
+				<checkstring>PONumberInNote</checkstring>
+			</checkfunction>
 			<outputfield>Note Raw</outputfield>
 			<action>Direct Output</action>
 		</field> 
