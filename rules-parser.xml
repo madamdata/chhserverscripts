@@ -59,7 +59,13 @@
 				<regex>L[0-9]{4,}</regex>
 				<!--<regex>^DETAIL.*$</regex>-->
 				<checkif>MATCH</checkif>
-				<checkstring>PONumberInNote</checkstring>
+				<checkstring>PONumberInNote </checkstring>
+			</checkfunction>
+			<checkfunction type='regex'>
+				<regex>(?i)(.|\n)*(holding bracket)(.|\n)*(holding bracket)(.|\n)*$</regex>
+				<!--<regex>^DETAIL.*$</regex>-->
+				<checkif>MATCH</checkif>
+				<checkstring>multiHoldingBrackets </checkstring>
 			</checkfunction>
 			<outputfield>Note Raw</outputfield>
 			<action>Direct Output</action>
@@ -72,22 +78,22 @@
 			<cell>1, 0</cell>
 			<outputfield>Detail Raw</outputfield>
 			<!--<checkfunction type='regex' reportstring='foobar'>.*(?i)Class F(?-i).*</checkfunction>-->
-			<checkfunction type='regex'>
-				<regex>^.+\n.+$</regex>
-				<!--<regex>^DETAIL.*$</regex>-->
-				<checkif>MATCH</checkif>
-				<checkstring>detailMultiLine </checkstring>
-			</checkfunction>
+			<!--<checkfunction type='regex'>-->
+				<!--<regex>^.+\n.+$</regex>-->
+				<!--[><regex>^DETAIL.*$</regex><]-->
+				<!--<checkif>MATCH</checkif>-->
+				<!--<checkstring>detailMultiLine </checkstring>-->
+			<!--</checkfunction>-->
 			<checkfunction type='regex'>
 				<regex>(?i)(.|\n)+?(class|cl)(.|\n)+?(class|cl)(.|\n)+?$</regex>
 				<checkif>MATCH</checkif>
 				<checkstring>detailMultiClass </checkstring>
 			</checkfunction>
-			<checkfunction type='regex'>
-				<regex>(?i)(.|\n)+?(series)(.|\n)+?(series)(.|\n)+?$</regex>
-				<checkif>MATCH</checkif>
-				<checkstring>detailMultiSeries </checkstring>
-			</checkfunction>
+			<!--<checkfunction type='regex'>-->
+				<!--<regex>(?i)(.|\n)+?(series)(.|\n)+?(series)(.|\n)+?$</regex>-->
+				<!--<checkif>MATCH</checkif>-->
+				<!--<checkstring>detailMultiSeries </checkstring>-->
+			<!--</checkfunction>-->
 			<action>Direct Output</action>
 		</field> 
 		<field type="Document level">

@@ -106,7 +106,10 @@ class POProcessor:
                     if valtype == 'string':
                         val = str(val)
                     if valtype == 'int':
-                        val = int(val)
+                        try:
+                            val = int(val)
+                        except ValueError: #can't be bodged into int
+                            val = None
                     if valtype == 'list':
                         val = [val]
                     if valtype == 'datetime':
@@ -115,6 +118,7 @@ class POProcessor:
                             val = None
                         else:
                             val = val.strftime('%Y-%m-%d')
+                if val != None:
                     nodes[header] = val
             # see 'printout' variable from kwargs
             if kwargs['printout']: 

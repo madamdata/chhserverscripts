@@ -114,7 +114,7 @@ if __name__ == '__main__':
     if dryrun:
         processor.upload('upload group 1', test_table, printout=True, dryrun=True)
 
-    # nodenetwork.listNodes(nodenames = ['F/B (scraped)'])
+    # nodenetwork.listNodes(nodenames = ['Price per Unit'])
     # nodenetwork.listNodes(nodenames = ['Note Raw', 'bracket1st', 'bracket2nd', 'F/B (scraped)'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'splitA', 'modelstringItem', 'MODEL', 'modelstringExtra'])

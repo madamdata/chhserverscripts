@@ -274,6 +274,18 @@
 				</group>
 			</split>
 			<split>
+				<regex>(Spacer) ([0-9]+) x [0-9]+mmL \(([0-9]+)mm thk\)</regex>
+				<group number='1'>
+					<node name="modelstringItem"></node>
+				</group>
+				<group number='2'>
+					<node name="modelstringSize"></node>
+				</group>
+				<group number='3'>
+					<node name="modelstringSpacerThickness"></node>
+				</group>
+			</split>
+			<split>
 				<regex>^(?i)(Ex-Proof Accessories|Aluminium Anti-Spark Thread)</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
@@ -392,7 +404,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>(2|4|2\/4) Pole</regex>
+				<regex>(2|4|2\/4|4\/6) Pole</regex>
 				<group number='1'>
 					<node name='t_motor_poles'></node>
 				</group>
@@ -410,7 +422,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>112M</regex>
+				<regex># ([0-9]+M)</regex>
 				<group number='1'>
 					<node name='Motor Frame (Scraped)'></node>
 				</group>
@@ -431,6 +443,18 @@
 			<translate>
 				<match input='t_motor_poles'>2\/4</match>
 				<node name='motorSpeed'>2880/1440</node>
+			</translate>
+			<translate>
+				<match input='t_motor_poles'>4\/6</match>
+				<node name='motorSpeed'>1440/900</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate">
+			<name>translateSpacerThickness</name>
+			<input>modelstringSpacerThickness</input>
+			<translate>
+				<match input='modelstringSpacerThickness'>3</match>
+				<node name='modelstringSpacerThickness'>2.5</node>
 			</translate>
 		</rule>
 
@@ -515,6 +539,18 @@
 			</translate>
 		</rule>
 
+		<rule type="matchAndTranslate">
+			<name>mountingfeetspecialcase</name>
+			<input>modelstringItem</input>
+			<input>Price per Unit</input>
+			<input>modelstringItem</input>
+			<translate>
+				<match input='modelstringItem'>MFeet</match>
+				<match input='Price per Unit'>-</match>
+				<node name='Price per Unit'>0</node>
+			</translate>
+		</rule>
+
 
 		<rule type="matchAndTranslate">
 			<name>translateSilencerSize</name>
@@ -586,6 +622,16 @@
 			<input>modelstringRSSize</input>
 			<node name='modelstringSize'></node>
 		</rule>
+		<rule type="matchAndTranslate">
+			<name>RS-31specialcase</name>
+			<input>modelstringRSSize</input>
+			<input>modelstringItem</input>
+			<translate>
+				<match input='modelstringItem'>RS</match>
+				<match input='modelstringRSSize'>31</match>
+				<node name='modelstringSize'>315</node>
+			</translate>
+		</rule>
 	</itemrules>
 	<checkrules>
 		<rule type='uploadnodes'>
@@ -611,11 +657,12 @@
 			<node name='motorBrand'>Motor Brand</node>
 			<node name='motorSpeed'>Motor Speed</node>
 			<node name='motorVoltage'>Motor Voltage</node>
+			<node name='modelstringSpacerThickness'>Thickness (From PO)</node>
 			<node name='F/B (scraped)'></node>
 			<node name='greaseNippleRemark'>Grease Nipple Remark / See Sample</node>
 			<node name='Reason' type='list'>Reason for Urgency</node>
 			<node name='Motor Frame (Scraped)'></node>
-			<node name='Price per Unit'></node>
+			<node name='Price per Unit' type='int'></node>
 			<node name='Take From'></node>
 			<node name='PO Number' type='string'></node>
 			<node name='Galvanised' type='datetime'>Galvanised/Fabrication Date (Requested)</node>
