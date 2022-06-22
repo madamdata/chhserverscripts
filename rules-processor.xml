@@ -106,6 +106,17 @@
 			</translate>
 		</rule>
 		<rule type="matchAndTranslate">
+			<name>noFBDefault</name>
+			<input>F/B (scraped)</input>
+			<condition type='nodeDoesNotExist'>
+				<node name='F/B (scraped)'></node>
+			</condition>
+			<translate>
+				<match input='F/B (scraped)'>.*</match>
+				<node name='F/B (scraped)'>不用F/B</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate">
 			<name>translateUrgency</name>
 			<input>Reason</input>
 			<input>Galvanised</input>
@@ -274,7 +285,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>(Spacer) ([0-9]+) x [0-9]+mmL \(([0-9]+)mm thk\)</regex>
+				<regex>(Spacer) ([0-9]+) x ([0-9]+)mmL \(([0-9]+)mm thk\)</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
 				</group>
@@ -282,6 +293,9 @@
 					<node name="modelstringSize"></node>
 				</group>
 				<group number='3'>
+					<node name="modelstringCasingLength"></node>
+				</group>
+				<group number='4'>
 					<node name="modelstringSpacerThickness"></node>
 				</group>
 			</split>
@@ -643,7 +657,6 @@
 			<node name='Note Raw'></node>
 			<node name='QTY' type='int'>Qty</node>
 			<node name='MODEL' type='string'>Item Raw</node>
-			<!--<node name='Detail Raw'></node>-->
 			<node name='detailSplit'>Detail Raw</node>
 			<node name='modelstringItem'>Item</node>
 			<node name='modelstringSize' type='string'>Size</node>
@@ -651,6 +664,7 @@
 			<node name='modelstringImpeller'>Impeller</node>
 			<node name='modelstringOD'>O/D</node>
 			<node name='modelstringPCD'>Casing PCD (Special) (mm)</node>
+			<node name='modelstringCasingLength'>Casing Length (Special)</node>
 			<node name='T/BOX'>T-box Position</node>
 			<node name='motorSize'>Motor Size</node>
 			<node name='motorClass'>Motor Class</node>
