@@ -101,8 +101,14 @@ if __name__ == '__main__':
     po.summarizeCheckStrings()
 
     #PROCESSOR
-    processortree = ET.parse('/home/chh/mail/chhserverscripts/rules-processor.xml')
-    processor = poprocessor.POProcessor(processortree)
+
+    rosenberg_processortree = ET.parse('/home/chh/mail/chhserverscripts/rules-processor-rosenberg.xml')
+    wolter_processortree = ET.parse('/home/chh/mail/chhserverscripts/rules-processor-wolter.xml')
+    if potype == 'wolter': 
+        processor = poprocessor.POProcessor(wolter_processortree)
+    elif potype == 'rosenberg':
+        processor = poprocessor.POProcessor(rosenberg_processortree)
+
     nodenetwork = processor.parse(po)
     # nodenetwork.listNodes()
     if testupload:

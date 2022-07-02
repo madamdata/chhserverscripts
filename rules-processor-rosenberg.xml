@@ -522,11 +522,18 @@
 			</translate>
 			<translate>
 				<match input='modelstringItem'>(RS|RSM)</match>
-				<node name="motorSize">-</node>
-				<node name="motorClass">-</node>
-				<node name="motorBrand">-</node>
-				<node name="motorSpeed">-</node>
+				<node name="motorSize"></node>
+				<node name="motorClass"></node>
+				<node name="motorBrand"></node>
+				<node name="motorSpeed"></node>
 			</translate>
+			<!--<translate>-->
+				<!--<match input='modelstringItem'>(?i)Spacer.*</match>-->
+				<!--<node name="motorSize"></node>-->
+				<!--<node name="motorClass"></node>-->
+				<!--<node name="motorBrand"></node>-->
+				<!--<node name="motorSpeed"></node>-->
+			<!--</translate>-->
 			<translate>
 				<match input='modelstringItem'>RV</match>
 				<node name="modelstringItem">RV - Ax</node>

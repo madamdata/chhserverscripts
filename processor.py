@@ -110,6 +110,11 @@ class POProcessor:
                             val = int(val)
                         except ValueError: #can't be bodged into int
                             val = None
+                    if valtype == 'float':
+                        try:
+                            val = float(val)
+                        except ValueError: #can't be bodged into float
+                            val = None
                     if valtype == 'list':
                         val = [val]
                     if valtype == 'datetime':
@@ -343,22 +348,23 @@ class ProcessorRule:
         called in matchAndTranslate
         """
         listOfReplacements = []
-        substitutions = re.findall(r'\{(.+?)\}', string)
-        for item in substitutions:
-            replacementText = ''
-            node = nodenetwork.getNode(item)
-            if node:
-                replacementText = node.value
-                if replacementText == None:
-                    replacementText = ''
-                # print(outval)
-                # print(replacementText)
-                # print(outvalTmpSub)
-            listOfReplacements.append(replacementText)
-        # print(listOfReplacements)
-        outstring = re.sub('\{.+?\}', '{}', string)
-        outstring = outstring.format(*listOfReplacements)
-        return outstring
+        if string:
+            substitutions = re.findall(r'\{(.+?)\}', string)
+            for item in substitutions:
+                replacementText = ''
+                node = nodenetwork.getNode(item)
+                if node:
+                    replacementText = node.value
+                    if replacementText == None:
+                        replacementText = ''
+                    # print(outval)
+                    # print(replacementText)
+                    # print(outvalTmpSub)
+                listOfReplacements.append(replacementText)
+            # print(listOfReplacements)
+            outstring = re.sub('\{.+?\}', '{}', string)
+            outstring = outstring.format(*listOfReplacements)
+            return outstring
 
     def mathx10RS(self, nodenetwork):
         """ multiplies by 10. unless the result is more than 1350.
@@ -418,7 +424,7 @@ class ProcessorRule:
                 for tree in outnodetrees:
                     nodename = tree.attrib['name']
                     node = nodenetwork.getOrMakeNode(nodename)
-                    outval = tree.text
+                    outval = tree.text #if there is no text between the xml <node> tags, this is None rather than ''
                     outval = self.substituteNodeValues(outval, nodenetwork) #sub in values of any other nodes in {curly braces}
                     node.value = outval
 

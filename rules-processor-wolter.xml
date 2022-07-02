@@ -1,0 +1,293 @@
+<processor-rules>
+	<!--types - splitregex,  matchandtranslate-->
+	<globalrules>
+		<rule type="splitRegex">
+			<name>deliveryDateSplit</name>
+			<input>Delivery Date</input>
+			<split>
+				<regex>(.*)</regex>
+				<group number='1'>
+					<node name='deliveryDateRaw'></node>
+				</group>
+			</split>
+			<split>
+				<regex>([0-9]+\/[0-9]+\/[0-9]+)</regex>
+				<group number='1'>
+					<node name='Delivery Date'></node>
+				</group>
+			</split>
+		</rule>
+		<!--<rule type="matchAndTranslate">-->
+			<!--<name>translateGreaseNipple</name>-->
+			<!--<input>Note Raw</input>-->
+			<!--<translate>-->
+				<!--<match input='Note Raw'>(?i).*w\/o grease nipples.*</match>-->
+				<!--<node name='greaseNippleRemark'>{greaseNippleRemark}不要加打油 </node>-->
+			<!--</translate>-->
+			<!--<translate>-->
+				<!--<match input='Note Raw'>(?i).*the fan dimensions according to the sample sent.*</match>-->
+				<!--<node name='greaseNippleRemark'>{greaseNippleRemark}照样本做 </node>-->
+			<!--</translate>-->
+			<!--<translate>-->
+				<!--<match input='Note Raw'>(?i).*Flange rolled casing without rebeading \(flat flange\).*</match>-->
+				<!--[><match input='Note Raw'>(?i).*Flange rolled casing.*</match><]-->
+				<!--<node name='greaseNippleRemark'>{greaseNippleRemark}Flange卷平  </node>-->
+			<!--</translate>-->
+		<!--</rule>-->
+
+		<!--<rule type="matchAndTranslate">-->
+			<!--<name>sameAsPrev</name>-->
+			<!--<input>Note Raw</input>-->
+			<!--<condition type='nodeExists'>-->
+				<!--<node name='samePrevOrderNum'></node>-->
+			<!--</condition>-->
+			<!--<translate>-->
+				<!--<match input='greaseNippleRemark'>.*</match>-->
+				<!--<node name='greaseNippleRemark'>{greaseNippleRemark} 照旧{samePrevOrderNum} {samePrevOrderDate}</node>-->
+				<!--<node name='F/B (scraped)'>查 F/B 照旧</node>-->
+			<!--</translate>-->
+		<!--</rule>-->
+
+		<!--<rule type="matchAndTranslate">-->
+			<!--<name>holdingBrackets</name>-->
+			<!--<input>bracket1st</input>-->
+			<!--<input>bracket2nd</input>-->
+			<!--<translate>-->
+				<!--<match input='bracket1st'>[0-9]+</match>-->
+				<!--<match input='bracket2nd'>[0-9]+</match>-->
+				<!--<node name='F/B (scraped)'>F/B {bracket1st}in x {bracket2nd}in</node>-->
+			<!--</translate>-->
+		<!--</rule>-->
+		<!--<rule type="matchAndTranslate">-->
+			<!--<name>noFBDefault</name>-->
+			<!--<input>F/B (scraped)</input>-->
+			<!--<condition type='nodeDoesNotExist'>-->
+				<!--<node name='F/B (scraped)'></node>-->
+			<!--</condition>-->
+			<!--<translate>-->
+				<!--<match input='F/B (scraped)'>.*</match>-->
+				<!--<node name='F/B (scraped)'>不用F/B</node>-->
+			<!--</translate>-->
+		<!--</rule>-->
+		<!--<rule type="matchAndTranslate">-->
+			<!--<name>translateUrgency</name>-->
+			<!--<input>Reason</input>-->
+			<!--<input>Galvanised</input>-->
+			<!--<translate>-->
+				<!--<match input='Reason'>.+</match>-->
+				<!--<node name='Reason'>Ms Tan PO</node>-->
+			<!--</translate>-->
+			<!--<translate>-->
+				<!--<match input='Galvanised'>.+</match>-->
+				<!--<node name='Reason'>Ms Tan PO</node>-->
+			<!--</translate>-->
+		<!--</rule>-->
+
+		<rule type="coerceDate">
+			<name>coerceIssueDate</name>
+			<input>PO Date</input>
+		</rule>
+		<rule type="coerceDate">
+			<name>coerceDeliveryDate</name>
+			<input>Delivery Date</input>
+		</rule>
+		<rule type="coerceDate">
+			<name>coerceGalvanisedDate</name>
+			<input>Galvanised</input>
+		</rule>
+
+		<rule type="copyToItems">
+			<name>copyPONum</name>
+			<input>PO Number</input>
+			<newnodename>PO Number</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyFilename</name>
+			<input>Filename</input>
+			<newnodename>Filename</newnodename>
+		</rule>
+
+		<rule type="copyToItems">
+			<name>copyPODate</name>
+			<input>PO Date</input>
+			<newnodename>PO Date</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyPODate</name>
+			<input>PO Date</input>
+			<newnodename>PO Date</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyFB</name>
+			<input>F/B (scraped)</input>
+			<newnodename>F/B (scraped)</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copySite</name>
+			<input>Project Site</input>
+			<newnodename>Project Site</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyNoteRaw</name>
+			<input>Note Raw</input>
+			<newnodename>Note Raw</newnodename>
+		</rule>
+
+		<rule type="copyToItems">
+			<name>copyDetailRaw</name>
+			<input>Detail Raw</input>
+			<newnodename>Detail Raw</newnodename>
+		</rule>
+
+		<rule type="copyToItems">
+			<name>copyDeliveryDate</name>
+			<input>Delivery Date</input>
+			<newnodename>PO Delivery Date</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyDeliveryDateRaw</name>
+			<input>deliveryDateRaw</input>
+			<newnodename>Delivery Date Raw</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyTakeFrom</name>
+			<input>Take From</input>
+			<newnodename>Take From</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyCheckString</name>
+			<input>checkString</input>
+			<newnodename>checkString</newnodename>
+		</rule>
+	</globalrules>
+
+
+	<itemrules>
+
+		<rule type="alias">
+			<name>renameFields</name>
+			<alias name='dia(mm)'>Size</alias>
+			<alias name='f.lgth'>Casing Length (Special)</alias>
+			<alias name='rpm'>Motor Speed</alias>
+			<alias name='motor(kw)'>Motor Size</alias>
+			<alias name='flc(amp)'>Motor Amp</alias>
+			<alias name='cl'>motorClass</alias>
+			<alias name='wt(kg)'>Fan Weight in kg</alias>
+			<alias name='dbA@3m'>Noise Level</alias>
+			<alias name='f.up'>Price per Unit</alias>
+		</rule>
+
+		<rule type="copyNode">
+			<name>copyModelStringToImpeller</name>
+			<input>model</input>
+			<newnodename>Impeller</newnodename>
+		</rule>
+		<rule type="splitRegex">
+			<name>supplySplit</name>
+			<input>supply</input>
+			<split>
+				<regex>^([0-9]+)\/.*</regex>
+				<group number='1'>
+					<node name='motorVoltage'></node>
+				</group>
+			</split>
+		</rule>
+
+		<rule type="splitRegex">
+			<name>modelSplit</name>
+			<input>model</input>
+			<split>
+				<regex>^(AXV|AXV BIF|BXV|MFLG|MTF)\s*[0-9]</regex>
+				<group number='1'>
+					<node name='modelstringItem'></node>
+				</group>
+			</split>
+		</rule>
+
+		<rule type="matchAndTranslate">
+			<name>addVtoVoltage</name>
+			<!--<nextrule>foo</nextrule>-->
+			<input>motorVoltage</input>
+			<translate>
+				<match input='motorVoltage'>.+</match>
+				<node name='motorVoltage'>{motorVoltage}V</node>
+			</translate>
+		</rule>
+		
+		<rule type="matchAndTranslate">
+			<name>addClasstoClass</name>
+			<!--<nextrule>foo</nextrule>-->
+			<input>motorClass</input>
+			<translate>
+				<match input='motorClass'>[A-Z]</match>
+				<node name='motorClass'>Class {motorClass}</node>
+			</translate>
+		</rule>
+
+
+
+		<rule type="matchAndTranslate">
+			<name>translatemodelstringItem</name>
+			<!--<nextrule>foo</nextrule>-->
+			<input>modelstringItem</input>
+			<translate>
+				<match input='modelstringItem'>AXV BIF</match>
+				<node name="modelstringItem">Bif</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>AXV</match>
+				<node name="modelstringItem">Ax</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>BXV</match>
+				<node name="modelstringItem">Ax</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>MFLG</match>
+				<node name="modelstringItem">MFlanges</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>MTF</match>
+				<node name="modelstringItem">MFeet</node>
+			</translate>
+		</rule>
+
+	</itemrules>
+	<checkrules>
+		<rule type='uploadnodes'>
+			<name>upload group 1</name>
+			<node name='s/n' type='string'>Item No.</node>
+			<node name='Project Site'></node>
+			<node name='PO Date' type='datetime'></node>
+			<node name='PO Delivery Date' type='datetime'></node>
+			<node name='Note Raw'></node>
+			<node name='Size' type='string'></node>
+			<node name='qty' type='int'>Qty</node>
+			<node name='model' type='string'>Item Raw</node>
+			<node name='detailSplit'>Detail Raw</node>
+			<node name='modelstringItem'>Item</node>
+			<node name='modelstringSilencerSize'>Silencer Size</node>
+			<node name='Impeller'></node>
+			<node name='Fan Weight in kg'></node>
+			<node name='Noise Level'></node>
+			<node name='Casing Length (Special)' type='string'></node>
+			<node name='T/BOX'>T-box Position</node>
+			<node name='Motor Size' type='string'></node>
+			<node name='motorClass'>Motor Class</node>
+			<node name='motorBrand'>Motor Brand</node>
+			<node name='Motor Speed' type='string'></node>
+			<node name='motorVoltage'>Motor Voltage</node>
+			<node name='modelstringSpacerThickness'>Thickness (From PO)</node>
+			<node name='F/B (scraped)'></node>
+			<node name='greaseNippleRemark'>Grease Nipple Remark / See Sample</node>
+			<node name='Reason' type='list'>Reason for Urgency</node>
+			<node name='Motor Frame (Scraped)'></node>
+			<node name='Price per Unit' type='float'></node>
+			<node name='Take From'></node>
+			<node name='PO Number' type='string'></node>
+			<node name='Galvanised' type='datetime'>Galvanised/Fabrication Date (Requested)</node>
+			<node name='Filename'></node>
+			<node name='checkString'></node>
+		</rule>
+	</checkrules>
+</processor-rules>
