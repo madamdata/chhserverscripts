@@ -280,11 +280,11 @@ class ProcessorRule:
         inp = self.tree.find('input').text 
         newnodename = self.tree.find('newnodename').text
         inpnode = nodenetwork.getNode(inp)
-        if inpnode:
+        if inpnode and inpnode.value:
             newnode = copy.copy(inpnode)
             newnode.header = newnodename
             # print("COPYING ", newnodename)
-            nodenetwork.addNode(newnode)
+            nodenetwork.addNode(newnode) #WILL OVERRIDE NODES OF THE SAME NAME
 
     def coerceDate(self, nodenetwork):
         """ tries to get whatever fubar date format provided by the client into

@@ -121,6 +121,11 @@
 				<checkif>MATCH</checkif>
 				<checkstring>linebreak </checkstring>
 			</checkfunction>
+			<checkfunction type='valueIsNone'>
+				<header>Targeted Date</header>
+				<checkif>MATCH</checkif>
+				<checkstring>TargetedDateEmpty </checkstring>
+			</checkfunction>
 			<action>Parse Table</action>
 			<tablefield>
 				ITEM

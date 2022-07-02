@@ -583,6 +583,12 @@ def checkFunction(tree, pofield):
             # print('fooo')
         else:
             check = not checkif
+        
+    elif checktype == 'valueIsNone':
+        if pofield.value:
+            check = checkif
+        else:
+            check = not checkif
 
     if check:
         outputstring = checkstring

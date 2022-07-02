@@ -182,6 +182,19 @@
 			<input>model</input>
 			<newnodename>Impeller</newnodename>
 		</rule>
+		<rule type="copyNode">
+			<name>copyTargetedToDelivery</name>
+			<!--<condition type='match'>-->
+				<!--<regex>[a-zA-Z]+</regex> [>if there are letters in the date field<]-->
+				<!--<node name='PO Delivery Date'></node>-->
+			<!--</condition>-->
+			<input>TargetedDate</input>
+			<newnodename>PO Delivery Date</newnodename>
+		</rule>
+		<rule type="coerceDate">
+			<name>itemcoerceDeliveryDate</name>
+			<input>PO Delivery Date</input>
+		</rule>
 		<rule type="splitRegex">
 			<name>supplySplit</name>
 			<input>supply</input>
