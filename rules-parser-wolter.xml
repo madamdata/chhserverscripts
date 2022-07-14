@@ -126,11 +126,17 @@
 				<checkif>MATCH</checkif>
 				<checkstring>TargetedDateEmpty </checkstring>
 			</checkfunction>
+			<auxfunction type='copyToNewItem'>
+				<header>s.model</header>
+				<header>s.qty</header>
+				<header>s.up</header>
+				<header>s.amt</header>
+			</auxfunction>
 			<action>Parse Table</action>
-			<tablefield>
-				ITEM
-				<name></name>
-			</tablefield>
+			<!--<tablefield>-->
+				<!--ITEM-->
+				<!--<name></name>-->
+			<!--</tablefield>-->
 		</field> 
 	</inputs>
 </poparser>

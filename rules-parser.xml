@@ -11,7 +11,7 @@
 		</field> 
 		<field type="Document level">
 			<name>issuedate</name>
-			<trigger type='regex'>(?i)Date</trigger>
+			<trigger type='regex'>(?i)^Date$</trigger>
 			<maxtriggers>1</maxtriggers>
 			<cell>1, 0</cell>
 			<outputfield>PO Date</outputfield>

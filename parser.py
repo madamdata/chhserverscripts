@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys, os, re, datetime, pyairtable, logger
+import sys, os, re, datetime, pyairtable, logger, copy
 
 
 class InputFieldParser:
@@ -247,7 +247,6 @@ class POParser:
                     for field in self.inputfields:
                         # output is a POField or None if no match
                         output, extracheckstrings = field.matchAndDoAction(cell, data_rows, (colnum, rownum))
-                        # output = field.matchAndGet(cell, data_rows, (colnum, rownum))  
                         if output:
                             po_object.addItem(output)
                         if extracheckstrings != '':
@@ -263,8 +262,11 @@ class TableParser:
     def __init__(self, tree):
         self.tree = tree
         self.checkfunctrees = []
+        self.auxfunctrees = []
         for checkfunctree in tree.findall('checkfunction'):
             self.checkfunctrees.append(checkfunctree)
+        for auxfunctree in tree.findall('auxfunction'):
+            self.auxfunctrees.append(auxfunctree)
         # print(self.headers)
 
     def getItemRowNumbers(self, coordinateTuple):
@@ -315,15 +317,18 @@ class TableParser:
         self.headers = [header for header in self.rawtable[ycoord] if header != None]
         rowNumbers, gapCheckString = self.getItemRowNumbers(self.tablestartcoord)
         colNumbers, itemHeader = self.getHeadersAndColumnNumbers(self.tablestartcoord)
+        # 1. make list 2. make item 3. fill item 4. add item to list
         output = POItemList()
-        for row in rowNumbers:
+        additionalPOItems = [] #for aux functions that dynamically create new items
+        for row in rowNumbers: # for every item in the table... 
             po_item = POItem()
-            for header, column in colNumbers: 
+            for header, column in colNumbers: # for each cell in that item ...  
                 # make a new POField, with the header and value from the table
                 checkFlags = []
                 checkString = ''
                 field = POField(header, self.rawtable[row][column])
-                # print(header, '-->', self.rawtable[row][column])
+
+                #run checkfunctions from checkfunctrees
                 for checkfunctree in self.checkfunctrees:
                     try:
                         headerregex = checkfunctree.find('header').text
@@ -334,15 +339,44 @@ class TableParser:
                             flag, string = checkFunction(checkfunctree, field)
                             # print(string)
                             checkFlags.append(flag)
-                            checkString += string
+
                 field.checkFlag = any(checkFlags)
                 field.checkString = checkString
 
                 #add the field to the growing POItem
                 po_item.addField(field)
+            
+            #run auxiliary functions. these are functions that operate on the item as a whole, for instance to split it into multiple items.
+            for auxfunctree in self.auxfunctrees:
+                if auxfunctree.attrib['type'] == 'copyToNewItem':
+                    headers = auxfunctree.findall('header')
+                    newPOItem = POItem()
+                    anyHeaderExists = False
+                    for header in headers:
+                        field = po_item.getField(header.text)
+                        if field:
+                            if field.value:
+                                anyHeaderExists = True # flag that data exists in the tracked headers somewhere
+                            newfield = copy.copy(field)
+                            newPOItem.addField(newfield)
+                    if anyHeaderExists: #only adds the new POItem if there is data ie the fields are not all None
+                        try:
+                            sn = po_item.fields['s/n'].value
+                            sn = str(sn) + 's'
+                            newPOItem.fields['s/n'] = POField('s/n', sn)
+                        except:
+                            pass
+                        print('hi')
+                        additionalPOItems.append(newPOItem)
+                # print(string)
+                checkFlags.append(flag)
+
             output.addPOItem(po_item)
+            for newitem in additionalPOItems:
+                output.addPOItem(newitem)
                 
 
+        # print(output.poitems)
         return output, gapCheckString
 
 
@@ -375,11 +409,6 @@ class PO:
         print('--------------- PARSER OUTPUT ------------------')
         for item in self.items:
             item.printVal()
-            # if item.__class__.__name__ == 'POItemList':
-                # for poitem in item:
-                    # poitem.printVal()
-            # else:
-                # item.printVal()
         if self.poitemlist: 
             self.poitemlist.printVal()
 
@@ -444,7 +473,7 @@ class POItem:
             outputstring += self.fields[key].header
             outputstring += ': '
             outputstring += self.fields[key].getValString() + ' | '
-        print(outputstring)
+        print(outputstring, '\n')
 
     def getCheckString(self):
         checkstring = ''
@@ -463,6 +492,13 @@ class POItem:
 
     def getByHeader(self, header):
         return self.fields[header].value
+
+    def getField(self, header):
+        try: 
+            output = self.fields[header]
+        except KeyError:
+            output = None
+        return output
 
     def getItemNumber(self):
         try:

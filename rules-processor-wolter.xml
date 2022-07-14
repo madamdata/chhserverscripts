@@ -176,6 +176,32 @@
 			<alias name='dbA@3m'>Noise Level</alias>
 			<alias name='f.up'>Price per Unit</alias>
 		</rule>
+		<!--these are for silencers only-->
+		<rule type="copyNode">
+			<name>copySilencerPrice</name>
+			<condition type='nodeDoesNotExist'>
+				<node name='Price per Unit'></node>
+			</condition>
+			<input>s.up</input>
+			<newnodename>Price per Unit</newnodename>
+		</rule>
+		<rule type="copyNode">
+			<name>copySilencerQty</name>
+			<condition type='nodeDoesNotExist'>
+				<node name='qty'></node>
+			</condition>
+			<input>s.qty</input>
+			<newnodename>qty</newnodename>
+		</rule>
+		<rule type="copyNode">
+			<name>copySilencermodel</name>
+			<condition type='nodeDoesNotExist'>
+				<node name='model'></node>
+			</condition>
+			<input>s.model</input>
+			<newnodename>model</newnodename>
+		</rule>
+		<!--end silencers only-->
 
 		<rule type="copyNode">
 			<name>copyModelStringToImpeller</name>

@@ -436,7 +436,7 @@
 				</group>
 			</split>
 			<split>
-				<regex># ([0-9]+M)</regex>
+				<regex>#\s*([0-9]+[A-Z]?)</regex>
 				<group number='1'>
 					<node name='Motor Frame (Scraped)'></node>
 				</group>
@@ -683,7 +683,7 @@
 			<node name='greaseNippleRemark'>Grease Nipple Remark / See Sample</node>
 			<node name='Reason' type='list'>Reason for Urgency</node>
 			<node name='Motor Frame (Scraped)'></node>
-			<node name='Price per Unit' type='int'></node>
+			<node name='Price per Unit' type='float'></node>
 			<node name='Take From'></node>
 			<node name='PO Number' type='string'></node>
 			<node name='Galvanised' type='datetime'>Galvanised/Fabrication Date (Requested)</node>
