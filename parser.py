@@ -319,9 +319,10 @@ class TableParser:
         colNumbers, itemHeader = self.getHeadersAndColumnNumbers(self.tablestartcoord)
         # 1. make list 2. make item 3. fill item 4. add item to list
         output = POItemList()
-        additionalPOItems = [] #for aux functions that dynamically create new items
+        # additionalPOItems = [] #for aux functions that dynamically create new items
         for row in rowNumbers: # for every item in the table... 
             po_item = POItem()
+            additionalPOItems = []
             for header, column in colNumbers: # for each cell in that item ...  
                 # make a new POField, with the header and value from the table
                 checkFlags = []
@@ -366,7 +367,7 @@ class TableParser:
                             newPOItem.fields['s/n'] = POField('s/n', sn)
                         except:
                             pass
-                        print('hi')
+                        # print('hi')
                         additionalPOItems.append(newPOItem)
                 # print(string)
                 checkFlags.append(flag)

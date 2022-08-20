@@ -412,7 +412,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>(Teco|Att|AEG|UMEB) Motor</regex>
+				<regex>(Teco|Att|AEG|UMEB|RAEL) Motor</regex>
 				<group number='1'>
 					<node name='motorBrand'></node>
 				</group>

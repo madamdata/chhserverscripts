@@ -16,30 +16,15 @@ fi
 #convert individual sheets in the excel files to csv
 # and SCRAPE
 
-################ OLD SCRAPER CODE ##############
-#if ls ++*.[xX][lL][sS][xX] 1> /dev/null 2>&1; then
-	#for xl in ++*.[xX][lL][sS][xX]; do /usr/local/bin/in2csv -n "$xl" | xargs -I % bash -c "/usr/local/bin/in2csv '$xl' --sheet % > '$xl'%.csv 2> /dev/null"; done
-	#for filename in ++*.[xX][lL][sS][xX];do mv $filename ${filename:2}; done
-	#find . -name "*.csv" -exec python3 ~/mail/chhserverscripts/scraper.py {} \; >> $SCRAPELOGFILE 2>&1
-##else
-	##echo "No new .xlsx files to process."
-#fi
-
-
 ############### NEW SCRAPER CODE ################
 
-if ls ++*.[xX][lL][sS][xX] 1> /dev/null 2>&1; then
+if ls *.[xX][lL][sS][xX] 1> /dev/null 2>&1; then
 	MODE='realupload'
-	find . -name '++*.xlsx' -exec sh -c "~/mail/chhserverscripts/2scraper.py -mode $MODE -potype $POTYPE '{}'" \; >> $SCRAPELOGFILE 2>&1
-	for filename in ++*.[xX][lL][sS][xX];do mv $filename ${filename:2}; done
-	#find . -name "*.csv" -exec sh -c "2scraper.py -mode $MODE -potype $POTYPE '{}'" \; >> $SCRAPELOGFILE 2>&1
-#else
+	#find . -name '++*.xlsx' -exec sh -c "~/mail/chhserverscripts/2scraper.py -mode $MODE -potype $POTYPE '{}'" \; >> $SCRAPELOGFILE 2>&1
+	#for filename in ++*.[xX][lL][sS][xX];do mv $filename ${filename:2}; done
+	find . -name '*.xlsx' -mmin -5 -exec sh -c "~/mail/chhserverscripts/2scraper.py -mode $MODE -potype $POTYPE '{}'" \; >> $SCRAPELOGFILE 2>&1
+	for filename in *.[xX][lL][sS][xX];do mv -n $filename processed/$filename; done
 fi
 
-#remove all csvs created by this script
-
-if ls ++*.csv 1> /dev/null 2>&1; then
-	rm ++*.csv
-fi
 
 

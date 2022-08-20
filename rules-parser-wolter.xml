@@ -45,16 +45,18 @@
 		</field> 
 		<field type="Document level">
 			<name>note</name>
-			<trigger type='raw'>**Note</trigger>
+			<trigger type='raw'>NB:</trigger>
+			<trigger type='raw'>NB</trigger>
 			<maxtriggers>1</maxtriggers>
 			<cell>1, 0</cell>
-			<cell>2, 0</cell>
-			<checkfunction type='regex'>
-				<regex>\n</regex>
-				<!--<regex>^DETAIL.*$</regex>-->
-				<checkif>MATCH</checkif>
-				<checkstring>noteMultiLine </checkstring>
-			</checkfunction>
+			<cell>1, 1</cell>
+			<cell>1, 2</cell>
+			<!--<checkfunction type='regex'>-->
+				<!--<regex>\n</regex>-->
+				<!--[><regex>^DETAIL.*$</regex><]-->
+				<!--<checkif>MATCH</checkif>-->
+				<!--<checkstring>noteMultiLine </checkstring>-->
+			<!--</checkfunction>-->
 			<outputfield>Note Raw</outputfield>
 			<action>Direct Output</action>
 		</field> 
