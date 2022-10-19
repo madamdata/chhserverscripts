@@ -402,6 +402,10 @@ class ProcessorRule:
             matchTruth = []
             for match in matches:
                 inp = match.attrib['input']
+                try:
+                    matchtype = match.attrib['matchtype']
+                except KeyError: #no 'matchtype' attrib - assume type is match
+                    matchtype = 'match'
                 regex = match.text
                 inpnode = nodenetwork.getNode(inp)
                 # print(nodenetwork.itemnumber())
@@ -416,9 +420,15 @@ class ProcessorRule:
                     # #dates will ALWAYS match
                     # matchTruth.append(True)
                 if re.search(regex, str(inpdata)): 
-                    matchTruth.append(True)
+                    if matchtype == 'match':
+                        matchTruth.append(True)
+                    else:
+                        matchTruth.append(False)
                 else: 
-                    matchTruth.append(False)
+                    if matchtype == 'match':
+                        matchTruth.append(False)
+                    else:
+                        matchTruth.append(True)
 
             if all(matchTruth): #if and only if all matches are True, output the specified value
                 for tree in outnodetrees:

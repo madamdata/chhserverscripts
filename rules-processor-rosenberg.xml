@@ -149,6 +149,11 @@
 			<newnodename>PO Number</newnodename>
 		</rule>
 		<rule type="copyToItems">
+			<name>copyImpellerSet</name>
+			<input>impellerset</input>
+			<newnodename>impellerset</newnodename>
+		</rule>
+		<rule type="copyToItems">
 			<name>copyFilename</name>
 			<input>Filename</input>
 			<newnodename>Filename</newnodename>
@@ -243,7 +248,8 @@
 			<alias name="Model/Description">MODEL</alias>
 			<alias name="Model">MODEL</alias>
 			<alias name="Date">DATE</alias>
-			<alias name="Motor">MOTOR</alias>
+			<alias name="Motor">motorSize</alias>
+			<alias name="MOTOR">motorSize</alias>
 			<alias name="Qty/Uts">QTY</alias>
 			<alias name="Item">ITEM</alias>
 			<alias name="T/Box">T/BOX</alias>
@@ -251,6 +257,7 @@
 			<alias name="T/BOX POSITION">T/BOX</alias>
 			<alias name="CLASS">t_motor_class</alias>
 			<alias name="S$U/P">Price per Unit</alias>
+			<alias name="Frame">Motor Frame (Scraped)</alias>
 			<alias name="s/n">ITEM</alias>
 		</rule>
 
@@ -372,6 +379,21 @@
 				</group>
 			</split>
 			<split>
+				<regex>(MS Inlet Cone) ([0-9]+)</regex> <!--xxxx/x-x/fooo format-->
+				<group number='1'>
+					<node name="modelstringItem"></node>
+				</group>
+				<group number='2'>
+					<node name="modelstringSize"></node>
+				</group>
+			</split>
+			<split>
+				<regex>(Epoxy Coating)</regex> <!--xxxx/x-x/fooo format-->
+				<group number='1'>
+					<node name="modelstringItem"></node>
+				</group>
+			</split>
+			<split>
 				<regex>[0-9]+\/[0-9-]+\/.+\(([0-9]+)mmL\)</regex>
 				<group number='1'>
 					<node name="modelstringCasingLength"></node>
@@ -393,9 +415,9 @@
 		</rule>
 		<rule type="splitRegex">
 			<name>splitMotorSize</name>
-			<input>MOTOR</input>
+			<input>motorSize</input>
 			<split>
-				<regex>([0-9.\/]+)kw</regex>
+				<regex>([0-9.\/]+)(kw)?</regex>
 				<group number='1'>
 					<node name='motorSize'></node>
 				</group>
@@ -455,11 +477,19 @@
 				<node name='motorSpeed'>1440</node>
 			</translate>
 			<translate>
+				<match input='t_motor_poles'>6</match>
+				<node name='motorSpeed'>1148</node>
+			</translate>
+			<translate>
 				<match input='t_motor_poles'>2\/4</match>
 				<node name='motorSpeed'>2880/1440</node>
 			</translate>
 			<translate>
 				<match input='t_motor_poles'>4\/6</match>
+				<node name='motorSpeed'>1440/900</node>
+			</translate>
+			<translate>
+				<match input='t_motor_poles'>4\/8</match>
 				<node name='motorSpeed'>1440/900</node>
 			</translate>
 		</rule>
@@ -492,6 +522,7 @@
 			<!--<nextrule>foo</nextrule>-->
 			<input>modelstringItem</input>
 			<input>modelstringExtra</input>
+			<input>impellerset</input>
 			<input>MODEL</input>
 			<translate>
 				<match input='modelstringItem'>AND</match>
@@ -551,12 +582,25 @@
 				<node name="modelstringItem">MFeet</node>
 			</translate>
 			<translate>
+				<match input='modelstringItem'>Epoxy Coating</match>
+				<node name="modelstringItem">Epoxy Painting</node>
+			</translate>
+			<translate>
+				<match input='impellerset'>(?i).*impeller set</match>
+				<match input='modelstringItem' matchtype='nomatch'>Epoxy Painting</match>
+				<node name="modelstringItem">Impeller</node>
+			</translate>
+			<translate>
 				<match input='modelstringItem'>Guide Vane</match>
 				<node name="modelstringItem">Guide Vane</node>
 			</translate>
 			<translate>
 				<match input='modelstringItem'>Aluminium Anti-Spark Thread</match>
 				<node name="modelstringItem">Track - Aluminium</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>MS Inlet Cone.*</match>
+				<node name="modelstringItem">Inlet Cone MS</node>
 			</translate>
 		</rule>
 

@@ -118,7 +118,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                     # print("test - skipping log for ++_chh...")
                     pass
                 filepath = attachmentFolderPath + pathString + filename
-                filepathprocessed = attachmentFolderPath + pathString + filenameprocessed #again just for checking duplicates
+                filepathprocessed = attachmentFolderPath + pathString + 'processed/' + filenameprocessed #again just for checking duplicates
 
                 # ---- check for duplicates and incremenk file name if needed, using next_path function defined above ----
                 # print("pathExists:", os.path.exists(filepath), "pathProcessedExists:", os.path.exists(filepathprocessed))

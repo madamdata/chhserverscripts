@@ -97,6 +97,14 @@
 			<action>Direct Output</action>
 		</field> 
 		<field type="Document level">
+			<name>impellerset</name>
+			<trigger type='regex'>(?i).* following impeller set.*</trigger>
+			<maxtriggers>1</maxtriggers>
+			<cell>0, 0</cell>
+			<outputfield>impellerset</outputfield>
+			<action>Direct Output</action>
+		</field> 
+		<field type="Document level">
 			<name>galvanised</name>
 			<trigger type='raw'>Galvanised</trigger>
 			<maxtriggers>1</maxtriggers>

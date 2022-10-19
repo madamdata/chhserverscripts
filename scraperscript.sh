@@ -22,7 +22,7 @@ if ls *.[xX][lL][sS][xX] 1> /dev/null 2>&1; then
 	MODE='realupload'
 	#find . -name '++*.xlsx' -exec sh -c "~/mail/chhserverscripts/2scraper.py -mode $MODE -potype $POTYPE '{}'" \; >> $SCRAPELOGFILE 2>&1
 	#for filename in ++*.[xX][lL][sS][xX];do mv $filename ${filename:2}; done
-	find . -name '*.xlsx' -mmin -5 -exec sh -c "~/mail/chhserverscripts/2scraper.py -mode $MODE -potype $POTYPE '{}'" \; >> $SCRAPELOGFILE 2>&1
+	find . -maxdepth 1 -name '*.xlsx' -mmin -5 -exec sh -c "~/mail/chhserverscripts/2scraper.py -mode $MODE -potype $POTYPE '{}'" \; >> $SCRAPELOGFILE 2>&1
 	for filename in *.[xX][lL][sS][xX];do mv -n $filename processed/$filename; done
 fi
 

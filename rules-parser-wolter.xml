@@ -106,18 +106,6 @@
 			<maxtriggers>1</maxtriggers>
 			<trigger type='raw'>s/n</trigger>
 			<checkfunction type='regex'>
-				<header>(?i)(item).*</header>
-				<regex>(?i)([A-Z])\d</regex> <!--search for 'A1', 'B2' etc-->
-				<checkif>MATCH</checkif>
-				<checkstring>multiTypeItem </checkstring>
-			</checkfunction>
-			<checkfunction type='regex'>
-				<header>(?i)model.*</header>
-				<regex>(?i).*mml.*mml.*</regex>
-				<checkif>MATCH</checkif>
-				<checkstring>multimmL</checkstring>
-			</checkfunction>
-			<checkfunction type='regex'>
 				<header>.*</header>
 				<regex>\n</regex>
 				<checkif>MATCH</checkif>
@@ -128,11 +116,12 @@
 				<checkif>MATCH</checkif>
 				<checkstring>TargetedDateEmpty </checkstring>
 			</checkfunction>
-			<auxfunction type='copyToNewItem'>
+			<auxfunction type='moveToNewItem'>
 				<header>s.model</header>
 				<header>s.qty</header>
 				<header>s.up</header>
 				<header>s.amt</header>
+				<header removeOriginal='False' newItemTrigger='False'>TargetedDate</header>
 			</auxfunction>
 			<action>Parse Table</action>
 			<!--<tablefield>-->

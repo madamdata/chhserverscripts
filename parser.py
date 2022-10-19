@@ -349,16 +349,40 @@ class TableParser:
             
             #run auxiliary functions. these are functions that operate on the item as a whole, for instance to split it into multiple items.
             for auxfunctree in self.auxfunctrees:
-                if auxfunctree.attrib['type'] == 'copyToNewItem':
+                funcType = auxfunctree.attrib['type']
+                if funcType == 'moveToNewItem' or 'copyToNewItem':
                     headers = auxfunctree.findall('header')
                     newPOItem = POItem()
                     anyHeaderExists = False
+
+                    # some items should not trigger the creation of a new item eg TargetedDate,
+                    # which exists on most entries. removeOriginal and newItemTrigger are flags to
+                    # ensure these fields don't trigger new entries but are still copied - without
+                    # removing the original as is done for Silencer things. 
                     for header in headers:
+                        try:
+                            if header.attrib['removeOriginal'] == 'False':
+                                removeOriginal = False
+                        except KeyError:
+                            removeOriginal = True
+
+                        try: 
+                            if header.attrib['newItemTrigger'] == 'False':
+                                newItemTrigger = False
+                        except KeyError:
+                            newItemTrigger = True
+
+
                         field = po_item.getField(header.text)
                         if field:
-                            if field.value:
+                            if field.value and field.value != '' and newItemTrigger:
                                 anyHeaderExists = True # flag that data exists in the tracked headers somewhere
                             newfield = copy.copy(field)
+
+                            # if this is a 'move' operation, remove the field from the old PO Item - to prevent rule clashes
+                            if removeOriginal:
+                                po_item.removeField(header.text)                             
+                            
                             newPOItem.addField(newfield)
                     if anyHeaderExists: #only adds the new POItem if there is data ie the fields are not all None
                         try:
@@ -500,6 +524,14 @@ class POItem:
         except KeyError:
             output = None
         return output
+
+    def removeField(self, header):
+        try: 
+            self.fields.pop(header)
+        except KeyError:
+            print("tried to remove non existent field: ", header)
+            # output = None
+        # return output
 
     def getItemNumber(self):
         try:
