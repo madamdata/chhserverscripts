@@ -377,7 +377,7 @@ class ProcessorRule:
         if inpnode: 
             try:
                 outval = float(inpnode.value) * 10 
-                if outval > 1350:
+                if outval > 1600:
                     outval = outval/10
             except ValueError:
                 print('input not a number: ', inp)

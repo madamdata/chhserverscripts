@@ -340,7 +340,7 @@
 			<node name='modelstringSilencerSize'>Silencer Size</node>
 			<node name='Impeller'></node>
 			<node name='Fan Weight in kg'></node>
-			<node name='Noise Level'></node>
+			<node name='Noise Level' type='string'></node>
 			<node name='Casing Length (Special)' type='string'></node>
 			<node name='T/BOX'>T-box Position</node>
 			<node name='Motor Size' type='string'></node>

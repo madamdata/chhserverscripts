@@ -135,12 +135,14 @@ class InputFieldParser:
             # the 'action' function is responsible for running the check functions of this inputfield
             output, checkstrings = action(self.tree, data_rows, coordinateTuple)
             extracheckstrings += checkstrings
+            # print('extra', extracheckstrings)
             # check output and store the result in the POField's checkFlag and checkString
         return output, extracheckstrings
 
     def parseTable(self, tree, data_rows, coordinateTuple):
         """ just runs the parse method of the table parser and returns the output """
         output, extracheckstrings = self.tableparser.parse(data_rows, coordinateTuple)
+        # print('extra:', extracheckstrings)
         return output, extracheckstrings
 
     def matchTrigger(self, string):
@@ -285,12 +287,18 @@ class TableParser:
                 # print('nonecell', self.rawtable[rownum][0])
                 rowNumbers.append(rownum)
             # Check the next row for empty space
-            elif self.rawtable[rownum+1][0] == None:
+            elif self.rawtable[rownum+1][0] == None: #if this triggers, [rownum][0] is definitely None
                 # Check for 2 blanks in a row, in case there's a single blank in the item col
-                if self.rawtable[rownum+2][0] == None:
-                    break
-                else: 
-                    gapCheckString = 'GAP IN TABLE DETECTED, CHECK MANUALLY'
+                # print('break:', self.rawtable[rownum+2][0])
+                break
+            else:
+                gapCheckString = 'GAP IN TABLE DETECTED, CHECK MANUALLY'
+                # if self.rawtable[rownum+2][0] == None:
+                    # print('break:', self.rawtable[rownum+2][0])
+                    # break
+                # else: 
+                    # gapCheckString = 'GAP IN TABLE DETECTED, CHECK MANUALLY'
+                    # print(gapCheckString)
         return rowNumbers, gapCheckString
 
     def getHeadersAndColumnNumbers(self, coordinateTuple):

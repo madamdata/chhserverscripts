@@ -83,6 +83,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
             if x.get_content_disposition() == 'attachment': # proceed only if this subpart is an attachment 
                 # ---- figure out what the header is based on RFC 2047 codes - to ensure unicode stuff eg Chinese chars appear correctly --- 
                 rawfilename = x.get_filename()
+                # print(rawfilename)
                 charset = None
                 try:
                     filename, charset = decode_header(rawfilename)[0] 
@@ -91,7 +92,11 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 if charset == 'utf-8':
                     filename = filename.decode('utf-8')
                 elif charset == None:
-                    filename = filename
+                    # print('No charset. Filename: ', filename)
+                    if filename:
+                        filename = filename
+                    else:
+                        filename = 'no_name_info'
                 else: 
                     print("Can't tell what encoding the filename is.")
                     filename = rawfilename

@@ -283,16 +283,19 @@
 				</group>
 			</split>
 			<split>
-				<regex>^(?i)(Mounting Feet|Matching Flanges) ([0-9]+)mm</regex>
+				<regex>^(?i)(Mounting Feet|Matching Flanges)( [0-9]+)mm( \(([0-9.]+)mm thk\))?</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
 				</group>
 				<group number='2'>
 					<node name="modelstringSize"></node>
 				</group>
+				<group number='4'>
+					<node name="modelstringSpacerThickness"></node>
+				</group>
 			</split>
 			<split>
-				<regex>(Spacer) ([0-9]+) x ([0-9]+)mmL \(([0-9]+)mm thk\)</regex>
+				<regex>(Spacer) ([0-9]+) x ([0-9]+)mmL \(([0-9.]+)mm thk\)</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
 				</group>
@@ -434,7 +437,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>(Teco|Att|AEG|UMEB|RAEL) Motor</regex>
+				<regex>(Teco|Att|AEG|UMEB|RAEL|WEG) Motor</regex>
 				<group number='1'>
 					<node name='motorBrand'></node>
 				</group>
@@ -486,7 +489,7 @@
 			</translate>
 			<translate>
 				<match input='t_motor_poles'>4\/6</match>
-				<node name='motorSpeed'>1440/900</node>
+				<node name='motorSpeed'>1440/1148</node>
 			</translate>
 			<translate>
 				<match input='t_motor_poles'>4\/8</match>
@@ -717,7 +720,7 @@
 			<node name='modelstringPCD'>Casing PCD (Special) (mm)</node>
 			<node name='modelstringCasingLength'>Casing Length (Special)</node>
 			<node name='T/BOX'>T-box Position</node>
-			<node name='motorSize'>Motor Size</node>
+			<node name='motorSize' type='string'>Motor Size</node>
 			<node name='motorClass'>Motor Class</node>
 			<node name='motorBrand'>Motor Brand</node>
 			<node name='motorSpeed'>Motor Speed</node>
