@@ -173,9 +173,18 @@
 			<name>modelSplit</name>
 			<input>model</input>
 			<split>
-				<regex>^(AXV|AXV BIF|BXV|MFLG)\s*[0-9]</regex>
+				<regex>^(AXV|BIF AXV|AXV BIF|BXV||BXV BIF|MFLG|AXV PM)\s*[0-9]</regex>
 				<group number='1'>
 					<node name='modelstringItem'></node>
+				</group>
+			</split>
+			<split>
+				<regex>^(AXG)\s*([0-9]+)".*</regex>  <!--specs in inches-->
+				<group number='1'>
+					<node name='modelstringItem'></node>
+				</group>
+				<group number='2'>
+					<node name='t_SizeInInches'></node>
 				</group>
 			</split>
 			<split>
@@ -187,6 +196,20 @@
 					<node name='Size'></node>
 				</group>
 			</split>
+			<split>
+				<regex>(?i).*(exd).*</regex>
+				<group number='1'>
+					<node name='modelstringExtra'></node>
+				</group>
+			</split>
+		</rule>
+		<rule type="matchAndTranslate">
+			<name>translatefromfuckinginches</name>
+			<input>t_SizeInInches</input>
+			<translate>
+				<match input='t_SizeInInches'>21</match>
+				<node name='Size'>535</node>
+			</translate>
 		</rule>
 		<rule type="splitRegex">
 			<name>modelSplitSilencers</name>
@@ -270,18 +293,46 @@
 			</translate>
 		</rule>
 
+		<!--strip '-' from output strings for f.lgth-->
+		<rule type="matchAndTranslate">
+			<name>casinglength</name>
+			<input>Casing Length (Special)</input>
+			<translate>
+				<match input='Casing Length (Special)'>^\s*-\s*$</match>
+				<node name='Casing Length (Special)'></node>
+			</translate>
+		</rule>
+
 
 		<rule type="matchAndTranslate"> <!--massaging model names-->
 			<name>translatemodelstringItem</name>
 			<!--<nextrule>foo</nextrule>-->
 			<input>modelstringItem</input>
+			<input>modelstringExtra</input>
 			<translate>
-				<match input='modelstringItem'>AXV BIF</match>
+				<match input='modelstringItem'>[A|B]XV BIF</match>
 				<node name="modelstringItem">Bif</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>BIF [A|B]XV</match>
+				<node name="modelstringItem">Bif</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>AXV PM</match>
+				<node name="modelstringItem">DQ-Ax</node>
 			</translate>
 			<translate>
 				<match input='modelstringItem'>AXV</match>
 				<node name="modelstringItem">Ax</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>AXG</match>
+				<node name="modelstringItem">Ax</node>
+			</translate>
+			<translate> <!--this needs to go before the more general case below-->
+				<match input='modelstringItem'>BXV</match>
+				<match input='modelstringExtra'>exd</match>
+				<node name="modelstringItem">Ax-Ex</node>
 			</translate>
 			<translate>
 				<match input='modelstringItem'>BXV</match>

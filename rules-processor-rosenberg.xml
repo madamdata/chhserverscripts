@@ -283,7 +283,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>^(?i)(Mounting Feet|Matching Flanges)( [0-9]+)mm( \(([0-9.]+)mm thk\))?</regex>
+				<regex>^(?i)(Mounting Feet|Matching Flanges)\s*([0-9]+)mm( \(([0-9.]+)mm thk\))?</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
 				</group>
@@ -514,6 +514,7 @@
 				<node name='motorClass'>Class {t_motor_class}</node>
 			</translate>
 			<translate>
+				<match input='t_motor_class'>[A-Z]</match>
 				<match input='t_motor_class_series'>[A-Z]</match>
 				<node name='motorClass'>{motorClass} ({t_motor_class_series})</node>
 			</translate>
@@ -531,10 +532,6 @@
 				<match input='modelstringItem'>AND</match>
 				<node name="modelstringItem">Ax</node>
 			</translate>
-			<!--<translate>-->
-				<!--<match input='modelstringItem'>AND</match>-->
-				<!--<node name="modelstringItem">Ax{modelstringSize}{ITEM}</node>-->
-			<!--</translate>-->
 			<translate>
 				<match input='modelstringItem'>Ax</match>
 				<match input='modelstringExtra'>-Ex</match>
@@ -636,7 +633,7 @@
 			<translate>
 				<match input='modelstringSilencerSize'>(-[0-9]+)L</match>
 				<match input='modelstringItem'>(RS|RSM)</match>
-				<node name='modelstringSilencerSize'>-{modelstringSilencerNumOnly}mmL</node>
+				<node name='modelstringSilencerSize'>-{modelstringSilencerNumOnly}mmL Collar</node>
 			</translate>
 		</rule>
 
