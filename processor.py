@@ -123,8 +123,16 @@ class POProcessor:
                             val = None
                         else:
                             val = val.strftime('%Y-%m-%d')
+                #apply extra processing if there is an 'extra' attribute
+                try:
+                    if tr.attrib['extra'] == 'stripspaces':
+                        if val: 
+                            val = val.replace(' ', '')
+                except KeyError:
+                    pass
                 if val != None:
                     nodes[header] = val
+
             # see 'printout' variable from kwargs
             if kwargs['printout']: 
                 print(nodes, '\n')

@@ -47,12 +47,6 @@
 					<node name='Take From'></node>
 				</group>
 			</split>
-			<!--<split>-->
-				<!--<regex>.*(w\/o grease nipples|the fan dimensions according to the sample sent).*</regex>-->
-				<!--<group number='1'>-->
-					<!--<node name='greaseNippleRemark'></node>-->
-				<!--</group>-->
-			<!--</split>-->
 			<split>
 				<regex>(?i)Same as previous(.*?)([L0-9].+)\s*?dated\s*?([0-9\/]+)</regex>
 				<group number='2'>
@@ -274,7 +268,7 @@
 			<name>modelstringMainSplit</name>
 			<input>MODEL</input>
 			<split>
-				<regex>^(BIF|SWSI|HRES|AND|RV|DQ)(-Ex|-GVD|-CR|-T|-S)?</regex>
+				<regex>^\s*(BIF|SWSI|HRES|AND|RV|DQ)(-Ex|-GVD|-CR|-T|-S)?</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
 				</group>
@@ -292,6 +286,24 @@
 				</group>
 				<group number='4'>
 					<node name="modelstringSpacerThickness"></node>
+				</group>
+			</split>
+			<split>
+				<regex>(?i)(Mounting Plate).*(DKHR|EKHR)</regex>
+				<group number='1'>
+					<node name="modelstringItem"></node>
+				</group>
+				<group number='2'>
+					<node name="mountingPlateType"></node>
+				</group>
+			</split>
+			<split>
+				<regex>(?i)([0-9]+)\s*holes\s*x\s*([0-9]+)(mm)?</regex>
+				<group number='1'>
+					<node name='casingHoleNumber'></node>
+				</group>
+				<group number='2'>					
+					<node name='casingHoleWidth'></node>
 				</group>
 			</split>
 			<split>
@@ -373,6 +385,12 @@
 				</group>
 			</split>
 			<split>
+				<regex>^(?i)(Grease Nipples?)$</regex>
+				<group number='1'>
+					<node name="modelstringItem"></node>
+				</group>
+			</split>
+			<split>
 				<regex>([0-9]+)\/([0-9A-Z-]+\/.+)</regex> <!--xxxx/x-x/fooo format-->
 				<group number='1'>
 					<node name="modelstringSize"></node>
@@ -437,9 +455,15 @@
 				</group>
 			</split>
 			<split>
-				<regex>(Teco|Att|AEG|UMEB|RAEL|WEG) Motor</regex>
+				<regex>(Teco|Att|AEG|UMEB|RAEL|WEG).*Motor</regex>
 				<group number='1'>
 					<node name='motorBrand'></node>
+				</group>
+			</split>
+			<split>
+				<regex>.*(EX).*</regex>
+				<group number='1'>
+					<node name='detailSplitEX'></node>
 				</group>
 			</split>
 			<split>
@@ -466,6 +490,26 @@
 					<node name='Motor Frame (Scraped)'></node>
 				</group>
 			</split>
+		</rule>
+		<rule type="matchAndTranslate">
+			<name>combineMountingPlateType</name>
+			<input>mountingPlateType</input>
+			<input>modelstringItem</input>
+			<translate>
+				<match input='modelstringItem'>(?i)mounting plate</match>
+				<match input='mountingPlateType'>.+</match>
+				<node name='modelstringItem'>{mountingPlateType} Mounting Plate</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate">
+			<name>translateMotorBrandEX</name>
+			<input>motorBrand</input>
+			<input>detailSplitEX</input>
+			<translate>
+				<match input='motorBrand'>RAEL</match>
+				<match input='detailSplitEX'>EX</match>
+				<node name='motorBrand'>RAEL-EX</node>
+			</translate>
 		</rule>
 
 		<rule type="matchAndTranslate">
@@ -494,6 +538,16 @@
 			<translate>
 				<match input='t_motor_poles'>4\/8</match>
 				<node name='motorSpeed'>1440/900</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate">
+			<name>translateCasingHole</name>
+			<input>casingHoleNumber</input>
+			<input>casingHoleWidth</input>
+			<translate>
+				<match input='casingHoleNumber'>.+</match>
+				<match input='casingHoleWidth'>.+</match>
+				<node name='Casing Hole (Special)'>{casingHoleNumber} x {casingHoleWidth}mmØ</node>
 			</translate>
 		</rule>
 		<rule type="matchAndTranslate">
@@ -536,6 +590,10 @@
 				<match input='modelstringItem'>Ax</match>
 				<match input='modelstringExtra'>-Ex</match>
 				<node name="modelstringItem">Ax-Ex</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>(?i)Grease Nipples?</match>
+				<node name="modelstringItem">Grease Nipple</node>
 			</translate>
 			<!--<translate>-->
 				<!--<match input='modelstringItem'>Ax</match>-->
@@ -696,6 +754,11 @@
 				<match input='modelstringRSSize'>31</match>
 				<node name='modelstringSize'>315</node>
 			</translate>
+			<translate>
+				<match input='modelstringItem'>RS</match>
+				<match input='modelstringRSSize'>35</match>
+				<node name='modelstringSize'>355</node>
+			</translate>
 		</rule>
 	</itemrules>
 	<checkrules>
@@ -716,6 +779,7 @@
 			<node name='modelstringOD'>O/D</node>
 			<node name='modelstringPCD'>Casing PCD (Special) (mm)</node>
 			<node name='modelstringCasingLength'>Casing Length (Special)</node>
+			<node name='Casing Hole (Special)'></node>
 			<node name='T/BOX'>T-box Position</node>
 			<node name='motorSize' type='string'>Motor Size</node>
 			<node name='motorClass'>Motor Class</node>

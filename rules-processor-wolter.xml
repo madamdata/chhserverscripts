@@ -173,7 +173,13 @@
 			<name>modelSplit</name>
 			<input>model</input>
 			<split>
-				<regex>^(AXV|BIF AXV|AXV BIF|BXV||BXV BIF|MFLG|AXV PM)\s*[0-9]</regex>
+				<regex>^(AXV|AXG|BIF AXV|AXV BIF|BXV||BXV BIF|MFLG|AXV PM)\s*[0-9]</regex>
+				<group number='1'>
+					<node name='modelstringItem'></node>
+				</group>
+			</split>
+			<split>
+				<regex>(?i)shaft\s+adaptor</regex>
 				<group number='1'>
 					<node name='modelstringItem'></node>
 				</group>
@@ -210,6 +216,16 @@
 				<match input='t_SizeInInches'>21</match>
 				<node name='Size'>535</node>
 			</translate>
+		</rule>
+		<rule type="splitRegex">
+			<name>motorsizeMultiples</name>
+			<input>Motor Size</input>
+			<split>
+				<regex>^([0-9.]+)\s*x\s*[0-9]+</regex>
+				<group number='1'> 
+					<node name='Motor Size'></node>
+				</group>
+			</split>
 		</rule>
 		<rule type="splitRegex">
 			<name>modelSplitSilencers</name>
@@ -253,6 +269,49 @@
 			</split>
 		</rule>
 
+		<!--extract numbers from casing length to remove 'x2' and other bullshit-->
+		<rule type="splitRegex">
+			<name>casinglengthspecialExtractNumber</name>
+			<input>Casing Length (Special)</input>
+			<split>
+				<regex>([0-9.]+)</regex>
+				<group number='1'>
+					<node name='Casing Length (Special)'></node>
+				</group>
+			</split>
+		</rule>
+
+		<rule type="splitRegex">
+			<name>motorClassExtractLetter</name>
+			<input>motorClass</input>
+			<split>
+				<regex>([A-Z]).*</regex>
+				<group number='1'>
+					<node name='motorClass'></node>
+				</group>
+			</split>
+		</rule>
+		<rule type="splitRegex">
+			<name>motorClassExtractLetter</name>
+			<input>motorClass</input>
+			<split>
+				<regex>([A-Z]).*</regex>
+				<group number='1'>
+					<node name='motorClass'></node>
+				</group>
+			</split>
+		</rule>
+		<rule type="splitRegex">
+			<name>motorClassExtractLetter</name>
+			<input>motorClass</input>
+			<split>
+				<regex>([A-Z]).*</regex>
+				<group number='1'>
+					<node name='motorClass'></node>
+				</group>
+			</split>
+		</rule>
+
 		<rule type="matchAndTranslate">
 			<name>addVtoVoltage</name>
 			<input>motorVoltage</input>
@@ -284,11 +343,15 @@
 			<name>cwCornerBracket</name>
 			<input>Note Raw</input>
 			<translate>
-				<match input='Note Raw'>.*c\/w corner bracket.*</match>
+				<match input='Note Raw'>(?i).*c\/w corner bracket.*</match>
 				<node name='F/B (scraped)'>F/B</node>
 			</translate>
 			<translate>
-				<match input='Note Raw'>.*c\/w corner bracket.*\(\s*no need\)</match>
+				<match input='Note Raw'>(?i).*c\/w corner bracket.*\(\s*no need\)</match>
+				<node name='F/B (scraped)'>不用F/B</node>
+			</translate>
+			<translate>
+				<match input='Note Raw'>(?i).*no\s*need.*corner\s*bracket</match>
 				<node name='F/B (scraped)'>不用F/B</node>
 			</translate>
 		</rule>
@@ -356,6 +419,24 @@
 				<node name="modelstringItem">RS</node>
 			</translate>
 		</rule>
+		<rule type="matchAndTranslate"> <!-- adding taper to bif -->
+			<name>translateBifTP</name>
+			<input>modelstringItem</input>
+			<input>model</input>
+			<translate>
+				<match input='modelstringItem'>Bif</match>
+				<match input='model'>(?i).*taper.*</match>
+				<node name='modelstringItem'>Bif T/p</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate"> <!--translating shaft adaptor from Ref field cos the client can't be fucking consistent ever-->
+			<name>translateShaftAdaptorfromRef</name>
+			<input>ref.</input>
+			<translate>
+				<match input='ref.'>(?i)shaft\s+adaptor</match>
+				<node name='modelstringItem'>Shaft Adaptor</node>
+			</translate>
+		</rule>
 		<rule type="matchAndTranslate"> <!--changing silencer size /3 etc-->
 			<name>translatemodelstringSilencerSize</name>
 			<input>modelstringSilencerSizeSlash</input>
@@ -394,10 +475,10 @@
 			<node name='Noise Level' type='string'></node>
 			<node name='Casing Length (Special)' type='string'></node>
 			<node name='T/BOX'>T-box Position</node>
-			<node name='Motor Size' type='string'></node>
+			<node name='Motor Size' type='string' extra='stripspaces'></node>
 			<node name='motorClass'>Motor Class</node>
 			<node name='motorBrand'>Motor Brand</node>
-			<node name='Motor Speed' type='string'></node>
+			<node name='Motor Speed' type='string' extra='stripspaces'></node>
 			<node name='motorVoltage'>Motor Voltage</node>
 			<node name='modelstringSpacerThickness'>Thickness (From PO)</node>
 			<node name='F/B (scraped)'></node>
