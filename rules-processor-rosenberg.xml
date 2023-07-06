@@ -6,7 +6,7 @@
 			<!--<nextrule>followtest</nextrule> [>the name of the next rule to apply if this one is triggered<]-->
 			<input>Detail Raw</input> <!--which node to get the data from--> 
 			<multisplit> <!--multisplit dynamically creates nodes based on multiple regex matches. eg (A), (B) etc-->
-				<regex>(\(([A-Z])\).+)</regex>
+				<regex>(\(([A-Z])\).+?(@nl|\n|$))</regex>
 				<group>1</group>
 				<node name="split{}"></node>
 			</multisplit>
@@ -268,7 +268,7 @@
 			<name>modelstringMainSplit</name>
 			<input>MODEL</input>
 			<split>
-				<regex>^\s*(BIF|SWSI|HRES|AND|RV|DQ)(-Ex|-GVD|-CR|-T|-S)?</regex>
+				<regex>^\s*(BIF|SWSI|HRES|AND|RV|DQ)\s*(-Ex|Ex|-GVD|-CR|-T|-S)?</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
 				</group>
@@ -346,6 +346,18 @@
 				</group>
 			</split>
 			<split>
+				<regex>^(Guide Vane) (\d+) \(([0-9.])+mm.*\)</regex>
+				<group number='1'>
+					<node name="modelstringItem"></node>
+				</group>
+				<group number='2'>
+					<node name="modelstringSize"></node>
+				</group>
+				<group number='3'>
+					<node name="modelstringCasingLength"></node>
+				</group>
+			</split>
+			<split>
 				<regex>^(Guide Vane) (\d+).*?(\d+ Blades), ?(\d+)mmL</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
@@ -357,18 +369,6 @@
 					<node name="modelstringImpeller"></node>
 				</group>
 				<group number='4'>					
-					<node name="modelstringCasingLength"></node>
-				</group>
-			</split>
-			<split>
-				<regex>^(Guide Vane) (\d+) \(([0-9.])+mm.*\)</regex>
-				<group number='1'>
-					<node name="modelstringItem"></node>
-				</group>
-				<group number='2'>
-					<node name="modelstringSize"></node>
-				</group>
-				<group number='3'>
 					<node name="modelstringCasingLength"></node>
 				</group>
 			</split>
@@ -400,7 +400,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>(MS Inlet Cone) ([0-9]+)</regex> <!--xxxx/x-x/fooo format-->
+				<regex>(MS Inlet Cone) ([0-9]+)</regex> 
 				<group number='1'>
 					<node name="modelstringItem"></node>
 				</group>
@@ -409,7 +409,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>(Epoxy Coating)</regex> <!--xxxx/x-x/fooo format-->
+				<regex>(Epoxy Coating)</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
 				</group>
@@ -432,7 +432,6 @@
 					<node name="modelstringPCD"></node>
 				</group>
 			</split>
-			<!--<regex input='MODEL'>^(BIF|AND|RV|DQ)(-Ex|-GVD|-CR|-T)? ? (([0-9]+)\/([^\/]+\/.+?( \((\d+)mmL\).*?)?)|(.+))$</regex>-->
 		</rule>
 		<rule type="splitRegex">
 			<name>splitMotorSize</name>
@@ -467,7 +466,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>(2|4|2\/4|4\/6) Pole</regex>
+				<regex>(2|4|2\/4|4\/6|4\/8) Pole</regex>
 				<group number='1'>
 					<node name='t_motor_poles'></node>
 				</group>
@@ -588,7 +587,7 @@
 			</translate>
 			<translate>
 				<match input='modelstringItem'>Ax</match>
-				<match input='modelstringExtra'>-Ex</match>
+				<match input='modelstringExtra'>(-Ex|Ex)</match>
 				<node name="modelstringItem">Ax-Ex</node>
 			</translate>
 			<translate>

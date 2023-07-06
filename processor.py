@@ -662,7 +662,11 @@ class POFieldNode:
 
     @classmethod
     def fromPOField(cls, pofield):
-        newnode = POFieldNode(pofield.header, pofield.value)
+        value = pofield.value
+        if value.__class__ == str :
+            value = value.replace('\n', '@nl')
+
+        newnode = POFieldNode(pofield.header, value)
         newnode.checkFlag = pofield.checkFlag
         newnode.checkString = pofield.checkString
         return newnode

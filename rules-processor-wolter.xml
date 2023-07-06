@@ -112,6 +112,7 @@
 			<alias name='f.up'>Price per Unit</alias>
 			<alias name='m.brand'>motorBrand</alias>
 			<alias name='Frame'>Motor Frame (Scraped)</alias>
+			<alias name='fr'>Motor Frame (Scraped)</alias>
 		</rule>
 		<!--these are for silencers only-->
 		<rule type="copyNode">
@@ -173,9 +174,18 @@
 			<name>modelSplit</name>
 			<input>model</input>
 			<split>
-				<regex>^(AXV|AXG|BIF AXV|AXV BIF|BXV||BXV BIF|MFLG|AXV PM)\s*[0-9]</regex>
+				<regex>^(AXV|AXG|BIF AXV|AXV BIF|BXV|BIF BXV|BXV BIF|MFLG|AXV PM)\s*[0-9]</regex>
 				<group number='1'>
 					<node name='modelstringItem'></node>
+				</group>
+			</split>
+			<split>
+				<regex>(MFLG)\s*([0-9]+)</regex>
+				<group number='1'>
+					<node name='modelstringItem'></node>
+				</group>
+				<group number='2'>
+					<node name='Size'></node>
 				</group>
 			</split>
 			<split>
