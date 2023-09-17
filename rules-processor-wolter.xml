@@ -169,6 +169,16 @@
 				</group>
 			</split>
 		</rule>
+		<rule type="splitRegex">
+			<name>MotorFrameSplit</name>
+			<input>Motor Frame (Scraped)</input>
+			<split>
+				<regex>(?i)(63|71|80M|80|90L|90S|90|100L|100|112M|112|132M|132S|132|160M|160L|160|180M|180L|180|200L|200M|225M|225S|225|250M|250|280M|280S|280|315L|315M|315S|315|355M|355)</regex>
+				<group number='1'>
+					<node name='Motor Frame (Scraped)'></node>
+				</group>
+			</split>
+		</rule>
 
 		<rule type="splitRegex"> <!--Main Model String Split-->
 			<name>modelSplit</name>
@@ -453,6 +463,21 @@
 			<translate>
 				<match input='modelstringSilencerSizeSlash'>([0-9])</match>
 				<node name="modelstringSilencerSize">-{modelstringSilencerSizeSlash}00mmL Collar</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate"> <!--rsm 310 and 350 should be 315 and 355 for some fucking insane reason-->
+			<name>translatersm310350</name>
+			<input>Size</input>
+			<input>modelstringSilencerSpecialSize</input>
+			<translate>
+				<match input='modelstringItem'>RSM</match>
+				<match input='modelstringSilencerSpecialSize'>31</match>
+				<node name='Size'>315</node>
+			</translate>
+			<translate>
+				<match input='modelstringItem'>RSM</match>
+				<match input='modelstringSilencerSpecialSize'>35</match>
+				<node name='Size'>355</node>
 			</translate>
 		</rule>
 		<rule type='mathx10RS'>

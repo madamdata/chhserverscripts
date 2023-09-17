@@ -197,6 +197,11 @@ class InputFieldParser:
                 # otherwise, preserve the data type, especially for dates
                 else:
                     output = targetcell
+                    # print(output)
+                    # if output:
+                        # if re.match(r'^\s+$', str(output)):
+                            # print('MATCHMATCHMATCH')
+                            # output = None
         # create a POField with the proper header (self.outputfield) and value (output)
         field = POField(self.outputfield, output)
         self.runCheckFunctions(field)
@@ -586,6 +591,14 @@ class POField:
     """ 
     def __init__(self, header, value):
         # self.value = str(value).replace('\n', ' @nl ')
+        # replace anything that is just blank space with None
+        # print(str(value))
+        try:
+            if re.match(r'^\s+$', str(value)):
+                # print('MATCHMATCHMATCH')
+                value = None
+        except:
+            pass
         self.value = value
         self.header = header
         self.checkFlag = False
