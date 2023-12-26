@@ -75,6 +75,17 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                 # print("po email not found in 'To' field")
         pathString = '/'.join(toComponents).lower() + '/' #turn it into a path by putting / between items and force lowercase
         pathStringForFilename = '_'.join(toComponents).lower() #with _ instead of / for filename
+        if 'rosenberg' in pathString:
+            potype = 'rosenberg'
+        elif 'wolter' in pathString:
+            potype = 'wolter'
+        elif 'wsk' in pathString:
+            potype = 'wsk'
+        elif 'metavent' in pathString:
+            potype = 'metavent'
+        else:
+            potype = ''
+
         currentDatestring = datetime.datetime.now().strftime("%d%m%Y_%H:%M")
         sentDatestring = dateparser.parse(msg['Date']).strftime("%m%d_%Y")
 
@@ -123,7 +134,7 @@ for key, msg in inbox.iteritems():            # step through all the mail in the
                     # print("test - skipping log for ++_chh...")
                     pass
                 filepath = attachmentFolderPath + pathString + filename
-                filepathprocessed = attachmentFolderPath + pathString + 'processed/' + filenameprocessed #again just for checking duplicates
+                filepathprocessed = attachmentFolderPath + pathString + potype + '-processed/' + filenameprocessed #again just for checking duplicates
 
                 # ---- check for duplicates and incremenk file name if needed, using next_path function defined above ----
                 # print("pathExists:", os.path.exists(filepath), "pathProcessedExists:", os.path.exists(filepathprocessed))

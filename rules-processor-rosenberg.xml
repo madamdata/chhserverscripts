@@ -230,6 +230,16 @@
 			<input>checkString</input>
 			<newnodename>checkString</newnodename>
 		</rule>
+		<rule type="copyToItems">
+			<name>copyTboxDimensionandHole</name>
+			<input>T-Box Dimension</input>
+			<newnodename>T-Box Dimension</newnodename>
+		</rule>
+		<rule type="copyToItems">
+			<name>copyHole</name>
+			<input>Holes</input>
+			<newnodename>Holes</newnodename>
+		</rule>
 
 		<rule type="copyByRegex">
 			<name>copyDetailSplits</name>
@@ -363,7 +373,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>^(Guide Vane) (\d+).*?(\d+ Blades), ?(\d+)mmL</regex>
+				<regex>^(Guide Vane) (\d+).*?(\d+ Blades).*?(\d+)mmL</regex>
 				<group number='1'>
 					<node name="modelstringItem"></node>
 				</group>
@@ -416,7 +426,7 @@
 			<split>
 				<regex>(?i)(Epoxy Coating|Epoxy Coated|Epoxy Painting)</regex>
 				<group number='1'>
-					<node name="modelstringItem"></node>
+					<node name="modelstringItem">Epoxy Painting</node>
 				</group>
 			</split>
 			<split>
@@ -471,7 +481,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>(2|4|2\/4|4\/6|4\/8) Pole</regex>
+				<regex>(2|4|6|2\/4|4\/6|4\/8) Pole</regex>
 				<group number='1'>
 					<node name='t_motor_poles'></node>
 				</group>
@@ -552,6 +562,16 @@
 				<match input='casingHoleNumber'>.+</match>
 				<match input='casingHoleWidth'>.+</match>
 				<node name='Casing Hole (Special)'>{casingHoleNumber} x {casingHoleWidth}mmØ</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate">
+			<name>combineTboxandHole</name>
+			<input>T-Box Dimension and Hole</input>
+			<input>Holes</input>
+			<translate>
+				<match input='T-Box Dimension'>.+</match>
+				<match input='Holes'>.+</match>
+				<node name='T-Box Dimension and Hole'>T-Box Dimension: {T-Box Dimension} || Holes: {Holes}</node>
 			</translate>
 		</rule>
 		<rule type="matchAndTranslate">
@@ -648,6 +668,10 @@
 				<node name="modelstringItem">Epoxy Painting</node>
 			</translate>
 			<translate>
+				<match input='modelstringItem'>Epoxy Coated</match>
+				<node name="modelstringItem">Epoxy Painting</node>
+			</translate>
+			<translate>
 				<match input='impellerset'>(?i).*impeller set</match>
 				<match input='modelstringItem' matchtype='nomatch'>Epoxy Painting</match>
 				<node name="modelstringItem">Impeller</node>
@@ -695,7 +719,7 @@
 			<translate>
 				<match input='modelstringSilencerSize'>(-[0-9]+)L</match>
 				<match input='modelstringItem'>(RS|RSM)</match>
-				<node name='modelstringSilencerSize'>-{modelstringSilencerNumOnly}mmL Collar</node>
+				<node name='modelstringSilencerSize'>-{modelstringSilencerNumOnly}mmL</node>
 			</translate>
 		</rule>
 
@@ -792,7 +816,7 @@
 			<node name='motorVoltage'>Motor Voltage</node>
 			<node name='modelstringSpacerThickness'>Thickness (From PO)</node>
 			<node name='F/B (scraped)'></node>
-			<node name='greaseNippleRemark'>Grease Nipple Remark / See Sample</node>
+			<node name='greaseNippleRemark'>Grease Nipple Remark</node>
 			<node name='Reason' type='list'>Reason for Urgency</node>
 			<node name='Motor Frame (Scraped)'></node>
 			<node name='Price per Unit' type='float'></node>
@@ -801,6 +825,7 @@
 			<node name='Galvanised' type='datetime'>Galvanised/Fabrication Date (Requested)</node>
 			<node name='Filename'></node>
 			<node name='checkString'></node>
+			<node name='T-Box Dimension and Hole'></node>
 			<node name='Nett Amount' type='float'></node>
 		</rule>
 	</checkrules>

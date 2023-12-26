@@ -37,6 +37,11 @@
 			<newnodename>PO Number</newnodename>
 		</rule>
 		<rule type="copyToItems">
+			<name>copyNettAmount</name>
+			<input>Nett Amount</input>
+			<newnodename>Nett Amount</newnodename>
+		</rule>
+		<rule type="copyToItems">
 			<name>copyFilename</name>
 			<input>Filename</input>
 			<newnodename>Filename</newnodename>
@@ -223,7 +228,7 @@
 				</group>
 			</split>
 			<split>
-				<regex>(?i).*(exd).*</regex>
+				<regex>(?i).*(exd|exn).*</regex>
 				<group number='1'>
 					<node name='modelstringExtra'></node>
 				</group>
@@ -235,6 +240,14 @@
 			<translate>
 				<match input='t_SizeInInches'>21</match>
 				<node name='Size'>535</node>
+			</translate>
+		</rule>
+		<rule type="matchAndTranslate">
+			<name>removeALU</name>
+			<input>Motor Frame (Scraped)</input>
+			<translate>
+				<match input='Motor Frame (Scraped)'>ALU</match>
+				<node name='Motor Frame (Scraped)'></node>
 			</translate>
 		</rule>
 		<rule type="splitRegex">
@@ -363,11 +376,11 @@
 			<name>cwCornerBracket</name>
 			<input>Note Raw</input>
 			<translate>
-				<match input='Note Raw'>(?i).*c\/w corner bracket.*</match>
+				<match input='Note Raw'>(?i)corner bracket.*</match>
 				<node name='F/B (scraped)'>F/B</node>
 			</translate>
 			<translate>
-				<match input='Note Raw'>(?i).*c\/w corner bracket.*\(\s*no need\)</match>
+				<match input='Note Raw'>(?i).*corner bracket.*\(\s*no need\)</match>
 				<node name='F/B (scraped)'>不用F/B</node>
 			</translate>
 			<translate>
@@ -411,6 +424,11 @@
 			<translate>
 				<match input='modelstringItem'>AXG</match>
 				<node name="modelstringItem">Ax</node>
+			</translate>
+			<translate> <!--this needs to go before the more general case below-->
+				<match input='modelstringItem'>Ax</match>
+				<match input='modelstringExtra'>(?i)exn</match>
+				<node name="modelstringItem">Ax-Ex</node>
 			</translate>
 			<translate> <!--this needs to go before the more general case below-->
 				<match input='modelstringItem'>BXV</match>
@@ -480,6 +498,14 @@
 				<node name='Size'>355</node>
 			</translate>
 		</rule>
+		<rule type="matchAndTranslate">
+			<name>1350rpmto1380</name>
+			<input>Motor Speed</input>
+			<translate>
+				<match input='Motor Speed'>1350</match>
+				<node name='Motor Speed'>1380</node>
+			</translate>
+		</rule>
 		<rule type='mathx10RS'>
 			<name>modelstringSilencerSpecialSize</name>
 			<condition type='nodeDoesNotExist'>
@@ -517,9 +543,10 @@
 			<node name='motorVoltage'>Motor Voltage</node>
 			<node name='modelstringSpacerThickness'>Thickness (From PO)</node>
 			<node name='F/B (scraped)'></node>
-			<node name='greaseNippleRemark'>Grease Nipple Remark / See Sample</node>
+			<node name='greaseNippleRemark'>Grease Nipple Remark</node>
 			<node name='Reason' type='list'>Reason for Urgency</node>
 			<node name='Motor Frame (Scraped)'></node>
+			<node name='Nett Amount' type='float'></node>
 			<node name='Price per Unit' type='float'></node>
 			<node name='Take From'></node>
 			<node name='PO Number' type='string'></node>

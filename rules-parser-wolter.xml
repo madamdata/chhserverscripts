@@ -103,6 +103,14 @@
 			<outputfield>Reason</outputfield>
 			<action>Direct Output</action>
 		</field> 
+		<field type="Document level">
+			<name>nett</name>
+			<trigger type='regex'>(?i)nett</trigger>
+			<maxtriggers>1</maxtriggers>
+			<cell>1, 0</cell>
+			<outputfield>Nett Amount</outputfield>
+			<action>Direct Output</action>
+		</field> 
 		<field type="Table">
 			<name>maintable</name>
 			<maxtriggers>1</maxtriggers>

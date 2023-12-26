@@ -120,10 +120,17 @@
 			<action>Direct Output</action>
 		</field> 
 		<field type="Document level">
-			<name>nettamount</name>
-			<trigger type='regex'>(?i)Nett</trigger>
+			<name>holes</name>
+			<trigger type='regex'>(?i)holes</trigger>
 			<cell>1, 0</cell>
-			<outputfield>Nett Amount</outputfield>
+			<outputfield>Holes</outputfield>
+			<action>Direct Output</action>
+		</field> 
+		<field type="Document level">
+			<name>T/Box</name>
+			<trigger type='regex'>T\/box</trigger>
+			<cell>1, 0</cell>
+			<outputfield>T-Box Dimension</outputfield>
 			<action>Direct Output</action>
 		</field> 
 		<field type="Table">

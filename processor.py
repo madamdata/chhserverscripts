@@ -102,6 +102,8 @@ class POProcessor:
                 if header == None:
                     header = tr.attrib['name']
                 # check types
+                if val == '':
+                    val = None
                 if val:
                     if valtype == 'string':
                         val = str(val)
@@ -146,6 +148,12 @@ class POProcessor:
                     errmatch = re.search(r'(select option|Unknown field name).*', errortext)
                     if errmatch:
                         print("HTTPError - ", errmatch.group(0), '\n')
+                        emergencynodes = {}
+                        emergencynodes['PO Number'] = nodes['PO Number']
+                        try:
+                            remote_table.create(emergencynodes)
+                        except requests.exceptions.HTTPError as error:
+                            print("Sorry can't help you, emergency upload also threw an error")
                     else:
                         print(errortext)
 
@@ -262,6 +270,7 @@ class ProcessorRule:
             else:
                 for item in nodenetwork.poitems:
                     if self.evaluateRuleCondition(item):
+                        # print(item.itemnumber())
                         function(item)
             # if self.type == 'splitregex':
                 # for item in nodenetwork.poitems:

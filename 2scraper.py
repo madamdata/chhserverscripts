@@ -124,7 +124,7 @@ if __name__ == '__main__':
     # nodenetwork.listNodes(nodenames = ['Note Raw', 'bracket1st', 'bracket2nd', 'F/B (scraped)'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'modelstringItem', 'MODEL'])
     # nodenetwork.listNodes(nodenames=['ITEM', 'splitA', 'modelstringItem', 'MODEL', 'modelstringExtra'])
-    # nodenetwork.listNodes(nodenames=['splitA', 'splitB', 'splitC'])
+    # nodenetwork.listNodes(nodenames=['T-Box Dimension and Hole', 'T-Box Test'])
 
     print(' >>>>>>> END ', filename, '>>>>>>>\n')
 
